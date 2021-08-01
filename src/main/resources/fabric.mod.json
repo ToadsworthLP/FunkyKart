@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "funkykart",
+  "version": "${version}",
+  "name": "FunkyKart",
+  "description": "Adds some stuff from a well-known racing game",
+  "authors": [
+    "ToadsworthLP"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/funkykart/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "toadsworthlp.funkykart.client.FunkyKartClient"
+    ],
+    "main": [
+      "toadsworthlp.funkykart.FunkyKart"
+    ]
+  },
+  "mixins": [
+    "funkykart.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.6",
+    "fabric": "*",
+    "minecraft": "1.17.1"
+  }
+}
