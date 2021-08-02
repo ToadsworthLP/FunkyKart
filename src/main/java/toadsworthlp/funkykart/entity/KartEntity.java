@@ -39,6 +39,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 import toadsworthlp.funkykart.FunkyKart;
+import toadsworthlp.funkykart.client.FunkyKartClient;
 
 import java.util.Iterator;
 import java.util.List;
