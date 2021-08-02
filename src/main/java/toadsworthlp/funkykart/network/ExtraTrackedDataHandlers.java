@@ -4,6 +4,7 @@ import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.math.Vec3d;
 
 public class ExtraTrackedDataHandlers {
     public static final TrackedDataHandler<Double> DOUBLE = new TrackedDataHandler<Double>() {
@@ -20,23 +21,23 @@ public class ExtraTrackedDataHandlers {
         }
     };
 
-    public static final TrackedDataHandler<Vector3d> VECTOR3 = new TrackedDataHandler<Vector3d>() {
-        public void write(PacketByteBuf packetByteBuf, Vector3d vector3d_) {
+    public static final TrackedDataHandler<Vec3d> VECTOR3 = new TrackedDataHandler<Vec3d>() {
+        public void write(PacketByteBuf packetByteBuf, Vec3d vector3d_) {
             packetByteBuf.writeDouble(vector3d_.x);
             packetByteBuf.writeDouble(vector3d_.y);
             packetByteBuf.writeDouble(vector3d_.z);
         }
 
-        public Vector3d read(PacketByteBuf packetByteBuf) {
-            return new Vector3d(
+        public Vec3d read(PacketByteBuf packetByteBuf) {
+            return new Vec3d(
                     packetByteBuf.readDouble(),
                     packetByteBuf.readDouble(),
                     packetByteBuf.readDouble()
             );
         }
 
-        public Vector3d copy(Vector3d vector3d) {
-            return new Vector3d(
+        public Vec3d copy(Vec3d vector3d) {
+            return new Vec3d(
                     vector3d.x,
                     vector3d.y,
                     vector3d.z
