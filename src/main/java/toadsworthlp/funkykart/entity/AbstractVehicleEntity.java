@@ -1,21 +1,23 @@
 package toadsworthlp.funkykart.entity;
 
+import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import toadsworthlp.funkykart.network.ExtraTrackedDataHandlers;
 
 @SuppressWarnings("EntityConstructor")
 public abstract class AbstractVehicleEntity extends LivingEntity {
-    public boolean gas = false;
+    //private static final TrackedData<Vector3d> a = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
 
     public AbstractVehicleEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -34,12 +36,6 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     @Override
     public void tick() {
         super.tick();
-
-        if(hasPassengers()) {
-            setYaw(getFirstPassenger().getHeadYaw());
-        }
-
-        if(gas) move(MovementType.SELF, this.getRotationVector().multiply(2));
     }
 
     @Override

@@ -8,12 +8,9 @@ import net.minecraft.entity.SpawnGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import toadsworthlp.funkykart.entity.KartEntity;
-import toadsworthlp.funkykart.networking.InputNetworking;
 
 public class FunkyKart implements ModInitializer {
     public static final String MODID = "funkykart";
-
-    public static InputNetworking INPUT_NET = new InputNetworking();;
 
     public static EntityType<KartEntity> KART_ENTITY;
 

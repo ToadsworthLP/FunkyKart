@@ -10,10 +10,8 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import toadsworthlp.funkykart.FunkyKart;
-import toadsworthlp.funkykart.client.input.InputManager;
 import toadsworthlp.funkykart.client.model.KartEntityModel;
 import toadsworthlp.funkykart.client.render.KartEntityRenderer;
-import toadsworthlp.funkykart.networking.InputType;
 
 @net.fabricmc.api.Environment(net.fabricmc.api.EnvType.CLIENT)
 public class FunkyKartClient implements ClientModInitializer {
@@ -22,7 +20,6 @@ public class FunkyKartClient implements ClientModInitializer {
     public static final String KEYBIND_CATEGORY = "category." + FunkyKart.MODID + ".controls";
     public static final String KEYBIND_PREFIX = "key." + FunkyKart.MODID + ".";
 
-    public static InputManager INPUT_MANAGER;
     public static KeyBinding GAS_KEY;
     public static KeyBinding BRAKE_KEY;
 
@@ -30,7 +27,6 @@ public class FunkyKartClient implements ClientModInitializer {
     public void onInitializeClient() {
         initializeRendering();
 
-        INPUT_MANAGER = new InputManager();
         initializeKeybinds();
     }
 
@@ -48,9 +44,6 @@ public class FunkyKartClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_B,
                 KEYBIND_CATEGORY
         ));
-
-        INPUT_MANAGER.registerInput(InputType.GAS, GAS_KEY);
-        INPUT_MANAGER.registerInput(InputType.BRAKE, BRAKE_KEY);
     }
 
     private void initializeRendering() {
