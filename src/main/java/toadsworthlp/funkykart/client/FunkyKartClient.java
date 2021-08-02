@@ -39,12 +39,10 @@ public class FunkyKartClient implements ClientModInitializer {
         if(client.world != null) { // Runs while the player is in a world
             Entity vehicle = client.player.getVehicle();
             if(vehicle instanceof AbstractVehicleEntity) { // Runs while the player is on a FunkyKart vehicle
-                ((AbstractVehicleEntity) vehicle).setSteerDirection(client.cameraEntity.getRotationVector());
-
                 if(GAS_KEY.isPressed()) {
-                    ((AbstractVehicleEntity) vehicle).gas(0.1);
+
                 } else if (BRAKE_KEY.isPressed()) {
-                    ((AbstractVehicleEntity) vehicle).brake(0.05);
+
                 }
             }
         }

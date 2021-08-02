@@ -12,4 +12,19 @@ public class KartEntity extends AbstractVehicleEntity{
     public KartEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }
+
+    @Override
+    public double getVehicleSpeedLimit() {
+        return 2;
+    }
+
+    @Override
+    public double getVehicleTraction() {
+        return 0.2;
+    }
+
+    @Override
+    public double getVehicleAcceleration() {
+        return 0.1;
+    }
 }
