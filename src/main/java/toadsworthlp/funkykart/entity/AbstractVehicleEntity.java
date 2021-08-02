@@ -16,7 +16,6 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
 
     public AbstractVehicleEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-        setInvulnerable(true);
     }
 
     public abstract double getVehicleSpeedLimit();

@@ -9,13 +9,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import toadsworthlp.funkykart.FunkyKart;
 import toadsworthlp.funkykart.client.model.KartEntityModel;
 import toadsworthlp.funkykart.client.render.KartEntityRenderer;
-import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 
 @net.fabricmc.api.Environment(net.fabricmc.api.EnvType.CLIENT)
 public class FunkyKartClient implements ClientModInitializer {
@@ -27,25 +25,14 @@ public class FunkyKartClient implements ClientModInitializer {
     public static KeyBinding GAS_KEY;
     public static KeyBinding BRAKE_KEY;
 
+    private static VehicleController vehicleController;
+
     @Override
     public void onInitializeClient() {
         initializeRendering();
         initializeKeybinds();
 
-        ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
-    }
-
-    private void clientTick(MinecraftClient client) {
-        if(client.world != null) { // Runs while the player is in a world
-            Entity vehicle = client.player.getVehicle();
-            if(vehicle instanceof AbstractVehicleEntity) { // Runs while the player is on a FunkyKart vehicle
-                if(GAS_KEY.isPressed()) {
-
-                } else if (BRAKE_KEY.isPressed()) {
-
-                }
-            }
-        }
+        vehicleController = new VehicleController();
     }
 
     private void initializeKeybinds() {
