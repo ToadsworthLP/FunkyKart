@@ -6,24 +6,18 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
+import toadsworthlp.funkykart.input.InputAxis;
 
 public class VehicleUpdater {
     public static void receiveUpdate(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         int targetId = buf.readInt();
 
-        Vec3d velocity = new Vec3d(
-                buf.readDouble(),
-                buf.readDouble(),
-                buf.readDouble()
-        );
-
-        server.execute(() -> {
-            Entity vehicle = player.getVehicle();
-            if(vehicle instanceof AbstractVehicleEntity && vehicle.getId() == targetId) {
-                vehicle.setVelocity(velocity);
+        Entity target = player.getServerWorld().getEntityById(targetId);
+        if(target instanceof AbstractVehicleEntity vehicle) {
+            for (InputAxis input : InputAxis.values()) {
+                vehicle.inputs.get(input).readFromBuffer(buf);
             }
-        });
+        }
     }
 }

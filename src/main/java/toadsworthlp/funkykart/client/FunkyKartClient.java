@@ -1,38 +1,38 @@
 package toadsworthlp.funkykart.client;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import toadsworthlp.funkykart.FunkyKart;
+import toadsworthlp.funkykart.client.input.InputManager;
 import toadsworthlp.funkykart.client.model.KartEntityModel;
 import toadsworthlp.funkykart.client.render.KartEntityRenderer;
+import toadsworthlp.funkykart.input.InputAxis;
 
 @net.fabricmc.api.Environment(net.fabricmc.api.EnvType.CLIENT)
 public class FunkyKartClient implements ClientModInitializer {
+
     public static EntityModelLayer KART_MODEL_LAYER;
 
     public static final String KEYBIND_CATEGORY = "category." + FunkyKart.MODID + ".controls";
     public static final String KEYBIND_PREFIX = "key." + FunkyKart.MODID + ".";
 
+    public static InputManager VEHICLE_INPUT;
     public static KeyBinding GAS_KEY;
     public static KeyBinding BRAKE_KEY;
 
-    private static VehicleController vehicleController;
-
     @Override
     public void onInitializeClient() {
+        VEHICLE_INPUT = new InputManager();
+
         initializeRendering();
         initializeKeybinds();
-
-        vehicleController = new VehicleController();
     }
 
     private void initializeKeybinds() {
@@ -42,6 +42,7 @@ public class FunkyKartClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_G,
                 KEYBIND_CATEGORY
         ));
+        VEHICLE_INPUT.registerInput(InputAxis.GAS, GAS_KEY);
 
         BRAKE_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 KEYBIND_PREFIX + "brake",
@@ -49,6 +50,7 @@ public class FunkyKartClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_B,
                 KEYBIND_CATEGORY
         ));
+        VEHICLE_INPUT.registerInput(InputAxis.BRAKE, BRAKE_KEY);
     }
 
     private void initializeRendering() {
