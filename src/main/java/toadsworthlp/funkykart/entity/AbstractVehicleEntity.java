@@ -5,6 +5,8 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
@@ -50,7 +52,11 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         inputs.put(InputAxis.STEER, new Vec3dInputAxis(Vec3d.ZERO));
         inputs.put(InputAxis.GAS, new BooleanInputAxis(false));
         inputs.put(InputAxis.BRAKE, new BooleanInputAxis(false));
+
+        setCustomName(getVehicleName());
     }
+
+    public abstract Text getVehicleName();
 
     public abstract double getVehicleSpeed();
 
@@ -75,6 +81,9 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public void tick() {
         super.tick();
 
+        // TODO maybe put this into some state
+        if(hasPassengers()) getFirstPassenger().setAir(getFirstPassenger().getMaxAir());
+
         if(!hasPassengers() && !stateMachine.getState().equals(standState)) stateMachine.setState(standState);
         stateMachine.tick();
 
@@ -83,6 +92,30 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         //setVelocity(getVelocity().add(steerDirection.multiply(getVehicleTraction())).normalize().multiply(currentSpeed));
     }
 
+    // Make it rideable underwater
+    @Override
+    public boolean canBeRiddenInWater() {
+        return true;
+    }
+
+    @Override
+    public boolean canBreatheInWater() {
+        return true;
+    }
+
+    // Completely disable fall damage
+    @Override
+    protected int computeFallDamage(float fallDistance, float damageMultiplier) {
+        return 0;
+    }
+
+    // Only display the vehicle name when it isn't being ridden
+    @Override
+    public boolean shouldRenderName() {
+        return !hasPassengers();
+    }
+
+    // Some other stuff
     @Override
     public Iterable<ItemStack> getArmorItems() {
         return DefaultedList.of();

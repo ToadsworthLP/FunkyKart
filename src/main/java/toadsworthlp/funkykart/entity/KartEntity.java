@@ -3,7 +3,10 @@ package toadsworthlp.funkykart.entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.world.World;
+import toadsworthlp.funkykart.FunkyKart;
 
 @SuppressWarnings("EntityConstructor")
 public class KartEntity extends AbstractVehicleEntity{
@@ -11,6 +14,11 @@ public class KartEntity extends AbstractVehicleEntity{
 
     public KartEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
+    }
+
+    @Override
+    public Text getVehicleName() {
+        return new TranslatableText(FunkyKart.KART_ENTITY.getTranslationKey());
     }
 
     @Override
