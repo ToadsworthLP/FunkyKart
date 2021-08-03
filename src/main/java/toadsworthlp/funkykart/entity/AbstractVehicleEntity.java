@@ -1,16 +1,17 @@
 package toadsworthlp.funkykart.entity;
 
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import toadsworthlp.funkykart.entity.state.BrakeState;
@@ -20,6 +21,7 @@ import toadsworthlp.funkykart.input.BaseInputAxis;
 import toadsworthlp.funkykart.input.BooleanInputAxis;
 import toadsworthlp.funkykart.input.InputAxis;
 import toadsworthlp.funkykart.input.Vec3dInputAxis;
+import toadsworthlp.funkykart.mixin.EntityMixin;
 import toadsworthlp.funkykart.util.IState;
 import toadsworthlp.funkykart.util.StateMachine;
 
@@ -37,13 +39,13 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
 
     public double currentSpeed = 0;
     public double targetSpeed = 0;
-    public double gravityStrength = 1.5;
+    public double gravityStrength = 1;
 
     public Vec3d currentDirection = Vec3d.ZERO;
     public Vec3d targetDirection = Vec3d.ZERO;
 
     public final Vec3d up = new Vec3d(0, 1, 0);
-    public final Vec3d gravityDir = up.multiply(-1);
+    public final Vec3d gravityDir = up.multiply(-1.25);
 
     public AbstractVehicleEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -54,9 +56,12 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         inputs.put(InputAxis.BRAKE, new BooleanInputAxis(false));
 
         setCustomName(getVehicleName());
+        stepHeight = 1;
     }
 
     public abstract Text getVehicleName();
+
+    public abstract EntityDimensions getVehicleDimensions();
 
     public abstract double getVehicleSpeed();
 
@@ -82,14 +87,27 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         super.tick();
 
         // TODO maybe put this into some state
+        // For underwater driving
         if(hasPassengers()) getFirstPassenger().setAir(getFirstPassenger().getMaxAir());
 
         if(!hasPassengers() && !stateMachine.getState().equals(standState)) stateMachine.setState(standState);
         stateMachine.tick();
 
-        setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
+        checkHitWall();
 
-        //setVelocity(getVelocity().add(steerDirection.multiply(getVehicleTraction())).normalize().multiply(currentSpeed));
+        setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
+    }
+
+    // Checks if a wall was hit and stops the player if needed
+    private void checkHitWall() {
+        Vec3d preAdjVelocity = getVelocity();
+        Vec3d postAdjVelocity = ((EntityMixin)this).callAdjustMovementForCollisions(preAdjVelocity);
+
+        boolean collision = !MathHelper.approximatelyEquals(preAdjVelocity.x, postAdjVelocity.x) || !MathHelper.approximatelyEquals(preAdjVelocity.z, postAdjVelocity.z);
+
+        if(collision) {
+            currentSpeed = 0;
+        }
     }
 
     // Make it rideable underwater

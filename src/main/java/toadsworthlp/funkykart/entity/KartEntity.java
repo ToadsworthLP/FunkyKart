@@ -22,8 +22,13 @@ public class KartEntity extends AbstractVehicleEntity{
     }
 
     @Override
+    public EntityDimensions getVehicleDimensions() {
+        return DIMENSIONS;
+    }
+
+    @Override
     public double getVehicleSpeed() {
-        return 1;
+        return 0.8;
     }
 
     @Override
