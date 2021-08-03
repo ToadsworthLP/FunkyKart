@@ -4,8 +4,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.input.Input;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
@@ -29,7 +27,7 @@ public class VehicleController {
 
     private void updateVehicle(AbstractVehicleEntity vehicle, MinecraftClient client) {
         Vec3d steerDirection = client.cameraEntity.getRotationVector();
-        double speed = FunkyKartClient.GAS_KEY.isPressed() ? vehicle.getVehicleSpeedLimit() : 0;
+        double speed = FunkyKartClient.GAS_KEY.isPressed() ? vehicle.getVehicleSpeed() : 0;
         System.out.println(speed);
 
         Vec3d up = new Vec3d(0, 1, 0);

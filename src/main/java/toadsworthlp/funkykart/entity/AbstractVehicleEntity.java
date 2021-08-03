@@ -1,22 +1,25 @@
 package toadsworthlp.funkykart.entity;
 
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import toadsworthlp.funkykart.entity.state.BrakeState;
+import toadsworthlp.funkykart.entity.state.GasState;
+import toadsworthlp.funkykart.entity.state.StandState;
 import toadsworthlp.funkykart.input.BaseInputAxis;
 import toadsworthlp.funkykart.input.BooleanInputAxis;
 import toadsworthlp.funkykart.input.InputAxis;
 import toadsworthlp.funkykart.input.Vec3dInputAxis;
+import toadsworthlp.funkykart.util.IState;
+import toadsworthlp.funkykart.util.StateMachine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,28 +28,39 @@ import java.util.Map;
 public abstract class AbstractVehicleEntity extends LivingEntity {
     public final Map<InputAxis, BaseInputAxis> inputs = new HashMap<>();
 
+    public StateMachine<AbstractVehicleEntity> stateMachine;
+    public IState<AbstractVehicleEntity> standState = new StandState();
+    public IState<AbstractVehicleEntity> gasState = new GasState();
+    public IState<AbstractVehicleEntity> brakeState = new BrakeState();
+
+    public double currentSpeed = 0;
+    public double targetSpeed = 0;
+    public double gravityStrength = 1.5;
+
+    public Vec3d currentDirection = Vec3d.ZERO;
+    public Vec3d targetDirection = Vec3d.ZERO;
+
+    public final Vec3d up = new Vec3d(0, 1, 0);
+    public final Vec3d gravityDir = up.multiply(-1);
+
     public AbstractVehicleEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
 
+        stateMachine = new StateMachine<>(this, standState);
         inputs.put(InputAxis.STEER, new Vec3dInputAxis(Vec3d.ZERO));
         inputs.put(InputAxis.GAS, new BooleanInputAxis(false));
         inputs.put(InputAxis.BRAKE, new BooleanInputAxis(false));
     }
 
-    public void processUpdate() {
-        Vec3d up = new Vec3d(0, 1, 0);
-        Vec3d steerDirection = (Vec3d)inputs.get(InputAxis.STEER).getCurrentState();
-        Vec3d planarSteerDirection = steerDirection.subtract(up.multiply(up.dotProduct(steerDirection))).normalize();
-        Vec3d velocity = planarSteerDirection.multiply(getVehicleSpeedLimit());
-
-        setVelocity(velocity);
-    }
-
-    public abstract double getVehicleSpeedLimit();
+    public abstract double getVehicleSpeed();
 
     public abstract double getVehicleTraction();
 
     public abstract double getVehicleAcceleration();
+
+    public abstract double getVehicleDeceleration();
+
+    public abstract double getVehicleBrakeForce();
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
@@ -61,16 +75,10 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public void tick() {
         super.tick();
 
-        Vec3d up = new Vec3d(0, 1, 0);
-        Vec3d steerDirection = (Vec3d)inputs.get(InputAxis.STEER).getCurrentState();
-        Vec3d planarSteerDirection = steerDirection.subtract(up.multiply(up.dotProduct(steerDirection))).normalize();
-        Vec3d velocity = planarSteerDirection.multiply((boolean)inputs.get(InputAxis.GAS).getCurrentState() ? getVehicleSpeedLimit() : 0).add(new Vec3d(0, -1.5, 0));
+        if(!hasPassengers() && !stateMachine.getState().equals(standState)) stateMachine.setState(standState);
+        stateMachine.tick();
 
-        setVelocity(velocity);
-
-        if(hasPassengers()) {
-            setYaw(getFirstPassenger().getHeadYaw());
-        }
+        setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
 
         //setVelocity(getVelocity().add(steerDirection.multiply(getVehicleTraction())).normalize().multiply(currentSpeed));
     }

@@ -21,7 +21,7 @@ public class InputManager {
     private final Map<InputAxis, IClientInputAxis> inputs = new HashMap<>();
 
     public InputManager() {
-        inputs.put(InputAxis.STEER, new LookClientInputAxis(Vec3d.ZERO, null)); // Needs to be set when joining world
+        inputs.put(InputAxis.STEER, new LookClientInputAxis(Vec3d.ZERO)); // Needs to be set when joining world
         ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
     }
 
@@ -31,9 +31,6 @@ public class InputManager {
 
     private void clientTick(MinecraftClient client) {
         if(client.world == null) return;
-
-        LookClientInputAxis lookAxis = (LookClientInputAxis)inputs.get(InputAxis.STEER);
-        lookAxis.cameraEntity = client.cameraEntity; // TODO more efficient version of this
 
         if(!(client.player.getVehicle() instanceof AbstractVehicleEntity)) return;
 

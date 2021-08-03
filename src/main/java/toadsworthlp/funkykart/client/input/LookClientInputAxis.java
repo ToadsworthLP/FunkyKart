@@ -1,20 +1,19 @@
 package toadsworthlp.funkykart.client.input;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
 import toadsworthlp.funkykart.input.Vec3dInputAxis;
 
 public class LookClientInputAxis extends Vec3dInputAxis implements IClientInputAxis<Vec3d, Vec3dInputAxis> {
-    public Entity cameraEntity;
-
-    public LookClientInputAxis(Vec3d initialState, Entity cameraEntity) {
+    public LookClientInputAxis(Vec3d initialState) {
         super(initialState);
-        this.cameraEntity = cameraEntity;
     }
 
     @Override
     public void updateInput() {
+        Entity cameraEntity = MinecraftClient.getInstance().cameraEntity;
         setState(cameraEntity == null ? Vec3d.ZERO : cameraEntity.getRotationVector());
     }
 

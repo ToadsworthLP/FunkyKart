@@ -6,9 +6,12 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRe
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import toadsworthlp.funkykart.entity.KartEntity;
+import toadsworthlp.funkykart.item.VehicleSpawnerItem;
 import toadsworthlp.funkykart.network.VehicleUpdater;
 
 public class FunkyKart implements ModInitializer {
@@ -17,11 +20,19 @@ public class FunkyKart implements ModInitializer {
 
     public static EntityType<KartEntity> KART_ENTITY;
 
+    public static Item KART_SPAWNER_ITEM;
+
     @Override
     public void onInitialize() {
         initializeEntities();
+        initializeItems();
 
         ServerPlayNetworking.registerGlobalReceiver(FunkyKart.VEHICLE_UPDATE_CHANNEL, VehicleUpdater::receiveUpdate);
+    }
+
+    private void initializeItems() {
+        KART_SPAWNER_ITEM = new VehicleSpawnerItem<>(new Item.Settings().group(ItemGroup.MISC), KART_ENTITY);
+        Registry.register(Registry.ITEM, new Identifier(MODID, "kart_spawner_item"), KART_SPAWNER_ITEM);
     }
 
     private void initializeEntities() {
