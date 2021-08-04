@@ -1,3 +1,15 @@
 {
-  "entity.funkykart.kart": "Standard Kart"
+  "item.funkykart.kart_spawner": "Standard Kart",
+  "item.funkykart.road_configurator": "Road Configurator",
+
+  "entity.funkykart.kart": "Standard Kart",
+
+  "tooltip.funkykart.road_block_list_header": "Road Blocks:",
+  "tooltip.funkykart.no_road_blocks_set": "Right-click on a block to add",
+
+  "message.funkykart.add_road_block": "Added ",
+  "message.funkykart.remove_road_block": "Removed ",
+  "message.funkykart.apply_road_blocks_success": "Road configuration applied",
+  "message.funkykart.apply_road_blocks_no_vehicle": "Not a compatible vehicle",
+  "message.funkykart.apply_road_blocks_sneak": "Sneak + right-click to apply configuration"
 }
