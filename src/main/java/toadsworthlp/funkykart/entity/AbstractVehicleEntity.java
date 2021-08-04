@@ -9,8 +9,9 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
-import net.minecraft.nbt.visitor.NbtElementVisitor;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -34,13 +35,10 @@ import toadsworthlp.funkykart.network.ExtraTrackedDataHandlers;
 import toadsworthlp.funkykart.util.IState;
 import toadsworthlp.funkykart.util.StateMachine;
 
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("EntityConstructor")
 public abstract class AbstractVehicleEntity extends LivingEntity {

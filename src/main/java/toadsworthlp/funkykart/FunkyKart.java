@@ -11,6 +11,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import toadsworthlp.funkykart.entity.KartEntity;
+import toadsworthlp.funkykart.item.RoadConfiguratorItem;
 import toadsworthlp.funkykart.item.VehicleSpawnerItem;
 import toadsworthlp.funkykart.network.VehicleUpdater;
 
@@ -21,6 +22,7 @@ public class FunkyKart implements ModInitializer {
     public static EntityType<KartEntity> KART_ENTITY;
 
     public static Item KART_SPAWNER_ITEM;
+    public static Item ROAD_CONFIGURATOR_ITEM;
 
     @Override
     public void onInitialize() {
@@ -32,7 +34,10 @@ public class FunkyKart implements ModInitializer {
 
     private void initializeItems() {
         KART_SPAWNER_ITEM = new VehicleSpawnerItem<>(new Item.Settings().group(ItemGroup.MISC), KART_ENTITY);
-        Registry.register(Registry.ITEM, new Identifier(MODID, "kart_spawner_item"), KART_SPAWNER_ITEM);
+        Registry.register(Registry.ITEM, new Identifier(MODID, "kart_spawner"), KART_SPAWNER_ITEM);
+
+        ROAD_CONFIGURATOR_ITEM = new RoadConfiguratorItem(new Item.Settings().group(ItemGroup.TOOLS));
+        Registry.register(Registry.ITEM, new Identifier(MODID, "road_configurator"), ROAD_CONFIGURATOR_ITEM);
     }
 
     private void initializeEntities() {
