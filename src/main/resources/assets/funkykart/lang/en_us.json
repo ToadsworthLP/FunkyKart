@@ -11,5 +11,12 @@
   "message.funkykart.remove_road_block": "Removed ",
   "message.funkykart.apply_road_blocks_success": "Road configuration applied",
   "message.funkykart.apply_road_blocks_no_vehicle": "Not a compatible vehicle",
-  "message.funkykart.apply_road_blocks_sneak": "Sneak + right-click to apply configuration"
+  "message.funkykart.apply_road_blocks_sneak": "Sneak + right-click to apply configuration",
+
+  "category.funkykart.controls": "FunkyKart",
+  "key.funkykart.gas": "Gas",
+  "key.funkykart.brake": "Brake",
+
+  "lambdacontrols.action.funkykart.gas": "Gas",
+  "lambdacontrols.action.funkykart.brake": "Brake"
 }

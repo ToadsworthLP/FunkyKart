@@ -4,12 +4,14 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import toadsworthlp.funkykart.FunkyKart;
+import toadsworthlp.funkykart.client.compat.LambdaControlsCompat;
 import toadsworthlp.funkykart.client.input.InputManager;
 import toadsworthlp.funkykart.client.model.KartEntityModel;
 import toadsworthlp.funkykart.client.render.KartEntityRenderer;
@@ -33,6 +35,7 @@ public class FunkyKartClient implements ClientModInitializer {
 
         initializeRendering();
         initializeKeybinds();
+        initializeCompat();
     }
 
     private void initializeKeybinds() {
@@ -57,5 +60,11 @@ public class FunkyKartClient implements ClientModInitializer {
         KART_MODEL_LAYER = new EntityModelLayer(new Identifier(FunkyKart.MODID, "kart"), "main");
         EntityRendererRegistry.INSTANCE.register(FunkyKart.KART_ENTITY, KartEntityRenderer::new);
         EntityModelLayerRegistry.registerModelLayer(KART_MODEL_LAYER, KartEntityModel::getTexturedModelData);
+    }
+
+    private void initializeCompat() {
+        if(FabricLoader.getInstance().isModLoaded("lambdacontrols")) {
+            new LambdaControlsCompat();
+        }
     }
 }
