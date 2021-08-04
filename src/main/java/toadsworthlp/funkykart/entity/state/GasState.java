@@ -23,8 +23,8 @@ public class GasState extends DriveState {
             return;
         }
 
-        if(target.currentSpeed < target.targetSpeed) target.currentSpeed += target.getVehicleAcceleration();
-        if(target.currentSpeed > target.targetSpeed) target.currentSpeed = target.targetSpeed;
+        if(target.currentSpeed < target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed += target.getVehicleAcceleration();
+        if(target.currentSpeed > target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed = target.targetSpeed * target.getTargetSpeedMultiplier();
 
         super.tick(target);
     }

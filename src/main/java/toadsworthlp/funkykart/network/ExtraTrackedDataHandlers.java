@@ -1,9 +1,14 @@
 package toadsworthlp.funkykart.network;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ExtraTrackedDataHandlers {
     public static final TrackedDataHandler<Double> DOUBLE = new TrackedDataHandler<Double>() {
@@ -44,8 +49,36 @@ public class ExtraTrackedDataHandlers {
         }
     };
 
+    public static final TrackedDataHandler<Set<Block>> BLOCK_SET = new TrackedDataHandler<Set<Block>>() {
+        public void write(PacketByteBuf packetByteBuf, Set<Block> blockSet) {
+            packetByteBuf.writeInt(blockSet.size());
+            blockSet.iterator().forEachRemaining((Block block) -> {
+                packetByteBuf.writeIdentifier(Registry.BLOCK.getId(block));
+            });
+        }
+
+        public Set<Block> read(PacketByteBuf packetByteBuf) {
+            int size = packetByteBuf.readInt();
+            Set<Block> blockSet = new HashSet<>(size);
+            for (int i = 0; i < size; i++) {
+                blockSet.add(Registry.BLOCK.get(packetByteBuf.readIdentifier()));
+            }
+
+            return blockSet;
+        }
+
+        public Set<Block> copy(Set<Block> blockSet) {
+            if(blockSet == null) {
+                return new HashSet<>();
+            } else {
+                return new HashSet<>(blockSet);
+            }
+        }
+    };
+
     static {
         TrackedDataHandlerRegistry.register(DOUBLE);
         TrackedDataHandlerRegistry.register(VECTOR3);
+        TrackedDataHandlerRegistry.register(BLOCK_SET);
     }
 }

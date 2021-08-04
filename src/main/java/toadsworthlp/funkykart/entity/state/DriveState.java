@@ -2,7 +2,6 @@ package toadsworthlp.funkykart.entity.state;
 
 import net.minecraft.util.math.Vec3d;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
-import toadsworthlp.funkykart.input.BooleanInputAxis;
 import toadsworthlp.funkykart.input.InputAxis;
 import toadsworthlp.funkykart.util.IState;
 import toadsworthlp.funkykart.util.Vec3dUtil;

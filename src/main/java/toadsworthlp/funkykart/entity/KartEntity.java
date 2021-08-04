@@ -22,23 +22,18 @@ public class KartEntity extends AbstractVehicleEntity{
     }
 
     @Override
-    public EntityDimensions getVehicleDimensions() {
-        return DIMENSIONS;
-    }
-
-    @Override
     public double getVehicleSpeed() {
-        return 0.8;
+        return 0.75;
     }
 
     @Override
     public double getVehicleTraction() {
-        return 0.06;
+        return 0.05;
     }
 
     @Override
     public double getVehicleAcceleration() {
-        return 0.05;
+        return 0.04;
     }
 
     @Override
@@ -49,5 +44,10 @@ public class KartEntity extends AbstractVehicleEntity{
     @Override
     public double getVehicleBrakeForce() {
         return 0.125;
+    }
+
+    @Override
+    public double getVehicleOffroadMultiplier() {
+        return 0.4;
     }
 }

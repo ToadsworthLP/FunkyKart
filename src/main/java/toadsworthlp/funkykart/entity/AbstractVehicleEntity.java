@@ -1,18 +1,26 @@
 package toadsworthlp.funkykart.entity;
 
-import net.minecraft.entity.EntityDimensions;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.*;
+import net.minecraft.nbt.visitor.NbtElementVisitor;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import toadsworthlp.funkykart.entity.state.BrakeState;
 import toadsworthlp.funkykart.entity.state.GasState;
@@ -22,11 +30,17 @@ import toadsworthlp.funkykart.input.BooleanInputAxis;
 import toadsworthlp.funkykart.input.InputAxis;
 import toadsworthlp.funkykart.input.Vec3dInputAxis;
 import toadsworthlp.funkykart.mixin.EntityMixin;
+import toadsworthlp.funkykart.network.ExtraTrackedDataHandlers;
 import toadsworthlp.funkykart.util.IState;
 import toadsworthlp.funkykart.util.StateMachine;
 
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("EntityConstructor")
 public abstract class AbstractVehicleEntity extends LivingEntity {
@@ -47,6 +61,12 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public final Vec3d up = new Vec3d(0, 1, 0);
     public final Vec3d gravityDir = up.multiply(-1.25);
 
+    private static final String ROAD_BLOCKS_KEY = "RoadBlocks";
+    private static final TrackedData<Set<Block>> ROAD_BLOCKS = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.BLOCK_SET);
+    private Set<Block> roadBlocks = new HashSet<>();
+
+    private boolean hadPassengerLastTick = false;
+
     public AbstractVehicleEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
 
@@ -61,8 +81,6 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
 
     public abstract Text getVehicleName();
 
-    public abstract EntityDimensions getVehicleDimensions();
-
     public abstract double getVehicleSpeed();
 
     public abstract double getVehicleTraction();
@@ -72,6 +90,8 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public abstract double getVehicleDeceleration();
 
     public abstract double getVehicleBrakeForce();
+
+    public abstract double getVehicleOffroadMultiplier();
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
@@ -86,16 +106,45 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public void tick() {
         super.tick();
 
-        // TODO maybe put this into some state
-        // For underwater driving
-        if(hasPassengers()) getFirstPassenger().setAir(getFirstPassenger().getMaxAir());
+        roadBlocks = this.dataTracker.get(ROAD_BLOCKS);
 
-        if(!hasPassengers() && !stateMachine.getState().equals(standState)) stateMachine.setState(standState);
+        if(hasPassengers()) {
+            getFirstPassenger().setAir(getFirstPassenger().getMaxAir()); // For underwater driving
+            hadPassengerLastTick = true;
+        } else {
+            if(hadPassengerLastTick) {
+                onPlayerDismounted();
+                hadPassengerLastTick = false;
+            }
+        }
+
         stateMachine.tick();
-
         checkHitWall();
 
         setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
+    }
+
+    public void onPlayerDismounted() {
+        // Reset input states
+        inputs.forEach((InputAxis key, BaseInputAxis axis) -> {
+            axis.resetState();
+        });
+
+        stateMachine.setState(standState);
+    }
+
+    public void setRoadBlocks(Set<Block> roadBlocks) {
+        this.roadBlocks = roadBlocks;
+        this.dataTracker.set(ROAD_BLOCKS, roadBlocks);
+    }
+
+    public double getTargetSpeedMultiplier() {
+        Block blockBelow = this.world.getBlockState(this.getBlockPos().subtract(new Vec3i(0, 1, 0))).getBlock();
+        if(blockBelow.equals(Blocks.AIR) || roadBlocks.contains(blockBelow)) {
+            return 1;
+        } else {
+            return getVehicleOffroadMultiplier();
+        }
     }
 
     // Checks if a wall was hit and stops the player if needed
@@ -106,8 +155,57 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         boolean collision = !MathHelper.approximatelyEquals(preAdjVelocity.x, postAdjVelocity.x) || !MathHelper.approximatelyEquals(preAdjVelocity.z, postAdjVelocity.z);
 
         if(collision) {
-            currentSpeed = 0;
+            if(currentSpeed > 0.175) {
+                currentDirection = postAdjVelocity.add(postAdjVelocity.subtract(preAdjVelocity)).normalize();
+                currentSpeed /= 4;
+            } else {
+                currentSpeed /= 4;
+            }
         }
+    }
+
+    // NBT handling
+    @Override
+    public void readCustomDataFromNbt(NbtCompound tag) {
+        super.readCustomDataFromNbt(tag);
+
+        // Read road data
+        if(tag.contains(ROAD_BLOCKS_KEY)) {
+            Set<Block> set = new HashSet<>();
+            NbtList list = (NbtList) tag.get(ROAD_BLOCKS_KEY);
+
+            list.iterator().forEachRemaining((NbtElement element) -> {
+                NbtCompound compound = (NbtCompound) element;
+                set.add(Registry.BLOCK.get(new Identifier(compound.getString("Id"))));
+            });
+
+            this.dataTracker.set(ROAD_BLOCKS, set);
+        }
+    }
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound tag) {
+        super.writeCustomDataToNbt(tag);
+
+        // Clean up existing road data
+        if(tag.contains(ROAD_BLOCKS_KEY)) tag.remove(ROAD_BLOCKS_KEY);
+
+        // Write new data
+        NbtList list = new NbtList();
+        roadBlocks.iterator().forEachRemaining((Block block) -> {
+            NbtCompound compound = new NbtCompound();
+            compound.putString("Id", Registry.BLOCK.getId(block).toString());
+            list.add(compound);
+        });
+
+        tag.put(ROAD_BLOCKS_KEY, list);
+    }
+
+    // Data tracking
+    @Override
+    protected void initDataTracker() {
+        super.initDataTracker();
+        this.dataTracker.startTracking(ROAD_BLOCKS, roadBlocks);
     }
 
     // Make it rideable underwater
