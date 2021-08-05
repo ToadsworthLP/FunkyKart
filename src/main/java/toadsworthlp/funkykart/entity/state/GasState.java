@@ -14,12 +14,12 @@ public class GasState extends DriveState {
     @Override
     public void tick(AbstractVehicleEntity target) {
         if(((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()) {
-            target.stateMachine.setState(target.brakeState);
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.BRAKE));
             return;
         }
 
         if(!((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState()) {
-            target.stateMachine.setState(target.standState);
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
             return;
         }
 

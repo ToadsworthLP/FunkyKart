@@ -17,7 +17,7 @@ public class BrakeState extends DriveState {
     @Override
     public void tick(AbstractVehicleEntity target) {
         if(!((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()) {
-            target.stateMachine.setState(target.standState);
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
             return;
         }
 

@@ -1,5 +1,7 @@
 package toadsworthlp.funkykart.entity;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
@@ -7,6 +9,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -44,31 +47,52 @@ import java.util.Set;
 public abstract class AbstractVehicleEntity extends LivingEntity {
     public final Map<InputAxis, BaseInputAxis> inputs = new HashMap<>();
 
+    // State machine variables
+
     public StateMachine<AbstractVehicleEntity> stateMachine;
-    public IState<AbstractVehicleEntity> standState = new StandState();
-    public IState<AbstractVehicleEntity> gasState = new GasState();
-    public IState<AbstractVehicleEntity> brakeState = new BrakeState();
+    public BiMap<VehicleState, IState<AbstractVehicleEntity>> states = HashBiMap.create();
+    public BiMap<IState<AbstractVehicleEntity>, VehicleState> inverseStates = states.inverse();
+    public enum VehicleState { STAND, GAS, BRAKE }
+
+    // Movement variables
 
     public double currentSpeed = 0;
     public double targetSpeed = 0;
     public double gravityStrength = 1;
-
     public Vec3d currentDirection = Vec3d.ZERO;
     public Vec3d targetDirection = Vec3d.ZERO;
 
     public final Vec3d up = new Vec3d(0, 1, 0);
     public final Vec3d gravityDir = up.multiply(-1.25);
 
-    private static final String ROAD_BLOCKS_KEY = "RoadBlocks";
-    private static final TrackedData<Set<Block>> ROAD_BLOCKS = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.BLOCK_SET);
     private Set<Block> roadBlocks = new HashSet<>();
-
     private boolean hadPassengerLastTick = false;
+
+    // Data trackers
+
+    private static final TrackedData<String> TRACKED_STATE_NAME = DataTracker.registerData(AbstractVehicleEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<Double> CURRENT_SPEED = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
+    private static final TrackedData<Double> TARGET_SPEED = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
+    private static final TrackedData<Double> GRAVITY_STRENGTH = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
+    private static final TrackedData<Vec3d> CURRENT_DIRECTION = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
+    private static final TrackedData<Vec3d> TARGET_DIRECTION = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
+    private static final TrackedData<Set<Block>> ROAD_BLOCKS = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.BLOCK_SET);
+
+    private static final String ROAD_BLOCKS_KEY = "RoadBlocks";
+
 
     public AbstractVehicleEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
 
-        stateMachine = new StateMachine<>(this, standState);
+        states.put(VehicleState.STAND, new StandState());
+        states.put(VehicleState.GAS, new GasState());
+        states.put(VehicleState.BRAKE, new BrakeState());
+
+        stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
+            VehicleState stateEnum = inverseStates.get(next);
+            this.dataTracker.set(TRACKED_STATE_NAME, stateEnum.name());
+        });
+
         inputs.put(InputAxis.STEER, new Vec3dInputAxis(Vec3d.ZERO));
         inputs.put(InputAxis.GAS, new BooleanInputAxis(false));
         inputs.put(InputAxis.BRAKE, new BooleanInputAxis(false));
@@ -106,8 +130,30 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
 
         roadBlocks = this.dataTracker.get(ROAD_BLOCKS);
 
+        // Client state synchronization
+        if(world.isClient) {
+            currentSpeed = this.dataTracker.get(CURRENT_SPEED);
+            targetSpeed = this.dataTracker.get(TARGET_SPEED);
+            gravityStrength = this.dataTracker.get(GRAVITY_STRENGTH);
+            currentDirection = this.dataTracker.get(CURRENT_DIRECTION);
+            targetDirection = this.dataTracker.get(TARGET_DIRECTION);
+
+            VehicleState localState = inverseStates.get(stateMachine.getState());
+            VehicleState remoteState = VehicleState.valueOf(dataTracker.get(TRACKED_STATE_NAME));
+            if(localState != remoteState) {
+                stateMachine.setState(states.get(remoteState));
+            }
+        } else {
+            if(hasPassengers()) getFirstPassenger().setAir(getFirstPassenger().getMaxAir()); // For underwater driving
+
+            stateMachine.tick();
+            setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
+
+            boolean hitWall = checkHitWall();
+            if(hitWall) currentSpeed /= 2;
+        }
+
         if(hasPassengers()) {
-            getFirstPassenger().setAir(getFirstPassenger().getMaxAir()); // For underwater driving
             hadPassengerLastTick = true;
         } else {
             if(hadPassengerLastTick) {
@@ -116,10 +162,11 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             }
         }
 
-        stateMachine.tick();
-        checkHitWall();
-
-        setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
+        dataTracker.set(CURRENT_SPEED, currentSpeed);
+        dataTracker.set(TARGET_SPEED, targetSpeed);
+        dataTracker.set(GRAVITY_STRENGTH, gravityStrength);
+        dataTracker.set(CURRENT_DIRECTION, currentDirection);
+        dataTracker.set(TARGET_DIRECTION, targetDirection);
     }
 
     public void onPlayerDismounted() {
@@ -128,7 +175,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             axis.resetState();
         });
 
-        stateMachine.setState(standState);
+        stateMachine.setState(states.get(VehicleState.STAND));
     }
 
     public void setRoadBlocks(Set<Block> roadBlocks) {
@@ -145,21 +192,12 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         }
     }
 
-    // Checks if a wall was hit and stops the player if needed
-    private void checkHitWall() {
+    // Checks if a wall was hit
+    private boolean checkHitWall() {
         Vec3d preAdjVelocity = getVelocity();
         Vec3d postAdjVelocity = ((EntityMixin)this).callAdjustMovementForCollisions(preAdjVelocity);
 
-        boolean collision = !MathHelper.approximatelyEquals(preAdjVelocity.x, postAdjVelocity.x) || !MathHelper.approximatelyEquals(preAdjVelocity.z, postAdjVelocity.z);
-
-        if(collision) {
-            if(currentSpeed > 0.175) {
-                currentDirection = postAdjVelocity.add(postAdjVelocity.subtract(preAdjVelocity)).normalize();
-                currentSpeed /= 4;
-            } else {
-                currentSpeed /= 4;
-            }
-        }
+        return !MathHelper.approximatelyEquals(preAdjVelocity.x, postAdjVelocity.x) || !MathHelper.approximatelyEquals(preAdjVelocity.z, postAdjVelocity.z);
     }
 
     // NBT handling
@@ -204,6 +242,12 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(ROAD_BLOCKS, roadBlocks);
+        this.dataTracker.startTracking(TRACKED_STATE_NAME, VehicleState.STAND.toString());
+        this.dataTracker.startTracking(CURRENT_SPEED, currentSpeed);
+        this.dataTracker.startTracking(TARGET_SPEED, targetSpeed);
+        this.dataTracker.startTracking(GRAVITY_STRENGTH, gravityStrength);
+        this.dataTracker.startTracking(CURRENT_DIRECTION, currentDirection);
+        this.dataTracker.startTracking(TARGET_DIRECTION, targetDirection);
     }
 
     // Make it rideable underwater

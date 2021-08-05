@@ -41,11 +41,15 @@ public class ExtraTrackedDataHandlers {
         }
 
         public Vec3d copy(Vec3d vector3d) {
-            return new Vec3d(
-                    vector3d.x,
-                    vector3d.y,
-                    vector3d.z
-            );
+            if(vector3d == null) {
+                return Vec3d.ZERO;
+            } else {
+                return new Vec3d(
+                        vector3d.x,
+                        vector3d.y,
+                        vector3d.z
+                );
+            }
         }
     };
 
