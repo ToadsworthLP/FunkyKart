@@ -130,8 +130,9 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
 
         roadBlocks = this.dataTracker.get(ROAD_BLOCKS);
 
-        // Client state synchronization
-        if(world.isClient) {
+        if(world.isClient()) {
+            // Client state synchronization
+
             currentSpeed = this.dataTracker.get(CURRENT_SPEED);
             targetSpeed = this.dataTracker.get(TARGET_SPEED);
             gravityStrength = this.dataTracker.get(GRAVITY_STRENGTH);
@@ -144,6 +145,8 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
                 stateMachine.setState(states.get(remoteState));
             }
         } else {
+            // Possibly state-changing actions
+
             if(hasPassengers()) getFirstPassenger().setAir(getFirstPassenger().getMaxAir()); // For underwater driving
 
             stateMachine.tick();
