@@ -7,6 +7,7 @@
     "EntityMixin"
   ],
   "client": [
+    "GameRendererFovMixin"
   ],
   "injectors": {
     "defaultRequire": 1

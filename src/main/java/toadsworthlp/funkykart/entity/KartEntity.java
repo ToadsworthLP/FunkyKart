@@ -33,12 +33,12 @@ public class KartEntity extends AbstractVehicleEntity{
 
     @Override
     public double getVehicleAcceleration() {
-        return 0.04;
+        return 0.03;
     }
 
     @Override
     public double getVehicleDeceleration() {
-        return 0.05;
+        return 0.04;
     }
 
     @Override
@@ -48,6 +48,6 @@ public class KartEntity extends AbstractVehicleEntity{
 
     @Override
     public double getVehicleOffroadMultiplier() {
-        return 0.4;
+        return 0.3;
     }
 }

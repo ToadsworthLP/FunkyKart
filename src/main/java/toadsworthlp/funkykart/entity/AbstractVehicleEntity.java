@@ -2,8 +2,12 @@ package toadsworthlp.funkykart.entity;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -26,6 +30,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import toadsworthlp.funkykart.client.FunkyKartClient;
 import toadsworthlp.funkykart.entity.state.BrakeState;
 import toadsworthlp.funkykart.entity.state.GasState;
 import toadsworthlp.funkykart.entity.state.StandState;
@@ -144,10 +149,21 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             if(localState != remoteState) {
                 stateMachine.setState(states.get(remoteState));
             }
+
+            updateFov();
         } else {
             // Possibly state-changing actions
 
-            if(hasPassengers()) getFirstPassenger().setAir(getFirstPassenger().getMaxAir()); // For underwater driving
+            // Underwater driving
+            if(hasPassengers()) {
+                if(isSubmergedInWater()) {
+                    getFirstPassenger().setAir(getFirstPassenger().getMaxAir());
+                    gravityStrength = 0.2;
+                } else {
+                    gravityStrength = 1;
+                }
+
+            }
 
             stateMachine.tick();
             setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
@@ -203,6 +219,14 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         return !MathHelper.approximatelyEquals(preAdjVelocity.x, postAdjVelocity.x) || !MathHelper.approximatelyEquals(preAdjVelocity.z, postAdjVelocity.z);
     }
 
+    @Environment(EnvType.CLIENT)
+    private void updateFov() {
+        Entity player = MinecraftClient.getInstance().player;
+        if(player.hasVehicle() && player.getVehicle() == this) {
+            FunkyKartClient.TARGET_FOV_MULTIPLIER = 1 + (currentSpeed/3);
+        }
+    }
+
     // NBT handling
     @Override
     public void readCustomDataFromNbt(NbtCompound tag) {
@@ -230,14 +254,16 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         if(tag.contains(ROAD_BLOCKS_KEY)) tag.remove(ROAD_BLOCKS_KEY);
 
         // Write new data
-        NbtList list = new NbtList();
-        roadBlocks.iterator().forEachRemaining((Block block) -> {
-            NbtCompound compound = new NbtCompound();
-            compound.putString("Id", Registry.BLOCK.getId(block).toString());
-            list.add(compound);
-        });
+        if(roadBlocks != null) {
+            NbtList list = new NbtList();
+            roadBlocks.iterator().forEachRemaining((Block block) -> {
+                NbtCompound compound = new NbtCompound();
+                compound.putString("Id", Registry.BLOCK.getId(block).toString());
+                list.add(compound);
+            });
 
-        tag.put(ROAD_BLOCKS_KEY, list);
+            tag.put(ROAD_BLOCKS_KEY, list);
+        }
     }
 
     // Data tracking
