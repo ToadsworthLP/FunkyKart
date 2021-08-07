@@ -21,6 +21,11 @@ public class BrakeState extends DriveState {
             return;
         }
 
+        if(((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState() && target.currentSpeed < STEER_VECTOR_RESET_SPEED) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.QUICK_START_CHARGE));
+            return;
+        }
+
         if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleBrakeForce();
         if(target.currentSpeed < target.targetSpeed) target.currentSpeed = target.targetSpeed;
 

@@ -33,6 +33,7 @@ import net.minecraft.world.World;
 import toadsworthlp.funkykart.client.FunkyKartClient;
 import toadsworthlp.funkykart.entity.state.BrakeState;
 import toadsworthlp.funkykart.entity.state.GasState;
+import toadsworthlp.funkykart.entity.state.QuickStartChargeState;
 import toadsworthlp.funkykart.entity.state.StandState;
 import toadsworthlp.funkykart.input.BaseInputAxis;
 import toadsworthlp.funkykart.input.BooleanInputAxis;
@@ -57,7 +58,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public StateMachine<AbstractVehicleEntity> stateMachine;
     public BiMap<VehicleState, IState<AbstractVehicleEntity>> states = HashBiMap.create();
     public BiMap<IState<AbstractVehicleEntity>, VehicleState> inverseStates = states.inverse();
-    public enum VehicleState { STAND, GAS, BRAKE }
+    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE }
 
     // Movement variables
 
@@ -66,6 +67,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public double gravityStrength = 1;
     public Vec3d currentDirection = Vec3d.ZERO;
     public Vec3d targetDirection = Vec3d.ZERO;
+    public double boostTime = 0;
 
     public final Vec3d up = new Vec3d(0, 1, 0);
     public final Vec3d gravityDir = up.multiply(-1.25);
@@ -81,6 +83,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     private static final TrackedData<Double> GRAVITY_STRENGTH = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
     private static final TrackedData<Vec3d> CURRENT_DIRECTION = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
     private static final TrackedData<Vec3d> TARGET_DIRECTION = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
+    private static final TrackedData<Double> BOOST_TIME = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
     private static final TrackedData<Set<Block>> ROAD_BLOCKS = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.BLOCK_SET);
 
     private static final String ROAD_BLOCKS_KEY = "RoadBlocks";
@@ -92,6 +95,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         states.put(VehicleState.STAND, new StandState());
         states.put(VehicleState.GAS, new GasState());
         states.put(VehicleState.BRAKE, new BrakeState());
+        states.put(VehicleState.QUICK_START_CHARGE, new QuickStartChargeState());
 
         stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
             VehicleState stateEnum = inverseStates.get(next);
@@ -143,6 +147,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             gravityStrength = this.dataTracker.get(GRAVITY_STRENGTH);
             currentDirection = this.dataTracker.get(CURRENT_DIRECTION);
             targetDirection = this.dataTracker.get(TARGET_DIRECTION);
+            boostTime = this.dataTracker.get(BOOST_TIME);
 
             VehicleState localState = inverseStates.get(stateMachine.getState());
             VehicleState remoteState = VehicleState.valueOf(dataTracker.get(TRACKED_STATE_NAME));
@@ -186,6 +191,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         dataTracker.set(GRAVITY_STRENGTH, gravityStrength);
         dataTracker.set(CURRENT_DIRECTION, currentDirection);
         dataTracker.set(TARGET_DIRECTION, targetDirection);
+        dataTracker.set(BOOST_TIME, boostTime);
     }
 
     public void onPlayerDismounted() {
@@ -277,6 +283,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         this.dataTracker.startTracking(GRAVITY_STRENGTH, gravityStrength);
         this.dataTracker.startTracking(CURRENT_DIRECTION, currentDirection);
         this.dataTracker.startTracking(TARGET_DIRECTION, targetDirection);
+        this.dataTracker.startTracking(BOOST_TIME, boostTime);
     }
 
     // Make it rideable underwater

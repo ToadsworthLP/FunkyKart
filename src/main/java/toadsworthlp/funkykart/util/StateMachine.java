@@ -30,6 +30,7 @@ public class StateMachine<T> {
         IState<T> previousState = currentState;
 
         currentState.exit(target, newState);
+        stateChangeTimer = 0;
         observer.stateChanged(previousState, newState);
         newState.enter(target, currentState);
         currentState = newState;
