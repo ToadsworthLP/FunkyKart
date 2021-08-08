@@ -16,11 +16,14 @@ public class QuickStartFailState extends DriveState {
 
     @Override
     public void tick(AbstractVehicleEntity target) {
-        target.setYaw(target.getYaw() + MathHelper.lerp((((float)DELAY) - target.stateMachine.getStateChangeTime()) / DELAY, 0, 45));
+        if(!target.world.isClient()) {
+            target.setYaw(target.getYaw() + MathHelper.lerp((((float)DELAY) - target.stateMachine.getStateChangeTime()) / DELAY, 0, 45));
+        }
 
         if(target.stateMachine.getStateChangeTime() >= DELAY) {
             target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
         }
+
     }
 
     private void spawnExplosionEffect(AbstractVehicleEntity target) {

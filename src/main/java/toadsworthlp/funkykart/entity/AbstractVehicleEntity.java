@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -223,12 +224,32 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     }
 
     // Checks if a wall was hit
+
     private boolean checkHitWall() {
         Vec3d preAdjVelocity = getVelocity();
         Vec3d postAdjVelocity = ((EntityMixin)this).callAdjustMovementForCollisions(preAdjVelocity);
 
         return !MathHelper.approximatelyEquals(preAdjVelocity.x, postAdjVelocity.x) || !MathHelper.approximatelyEquals(preAdjVelocity.z, postAdjVelocity.z);
     }
+
+
+    // Particle effects
+
+    public void spawnExhaustParticles(AbstractVehicleEntity target, int pauseTicks) {
+        if(this.hasPassengers() && target.stateMachine.getStateChangeTime() % pauseTicks == 0) {
+            Vec3d vel = target.getRotationVector().multiply(-0.1);
+            target.world.addParticle(
+                    ParticleTypes.SMOKE,
+                    target.getX(),
+                    target.getY() + 0.5,
+                    target.getZ(),
+                    vel.x,
+                    vel.y,
+                    vel.z);
+        }
+    }
+
+    // FOV change effect
 
     @Environment(EnvType.CLIENT)
     private void updateFov() {

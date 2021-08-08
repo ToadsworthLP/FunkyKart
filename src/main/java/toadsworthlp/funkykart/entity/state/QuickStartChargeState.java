@@ -23,7 +23,7 @@ public class QuickStartChargeState extends DriveState {
         }
 
         if(!(((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()
-        && ((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState())) {
+                && ((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState())) {
             if(target.stateMachine.getStateChangeTime() > SUCCESS_DELAY) {
                 target.boostTime += 20;
                 target.currentSpeed = target.targetSpeed * target.getTargetSpeedMultiplier();
@@ -35,7 +35,7 @@ public class QuickStartChargeState extends DriveState {
             return;
         }
 
-        spawnExhaustParticles(target, 1);
+        target.spawnExhaustParticles(target, 1);
         super.tick(target);
     }
 }
