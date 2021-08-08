@@ -26,6 +26,7 @@ public class GasState extends DriveState {
         if(target.currentSpeed < target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed += target.getVehicleAcceleration();
         if(target.currentSpeed > target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed = target.targetSpeed * target.getTargetSpeedMultiplier();
 
+        spawnExhaustParticles(target, 1);
         super.tick(target);
     }
 }

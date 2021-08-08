@@ -31,6 +31,7 @@ public class BrakeState extends DriveState {
 
         if(target.currentSpeed < STEER_VECTOR_RESET_SPEED) target.currentDirection = Vec3d.ZERO;
 
+        spawnExhaustParticles(target, 5);
         super.tick(target);
     }
 }

@@ -35,6 +35,7 @@ public class QuickStartChargeState extends DriveState {
             return;
         }
 
+        spawnExhaustParticles(target, 1);
         super.tick(target);
     }
 }

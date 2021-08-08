@@ -1,9 +1,7 @@
 package toadsworthlp.funkykart.entity.state;
 
-import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.explosion.Explosion;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 import toadsworthlp.funkykart.util.IState;
 
@@ -29,10 +27,10 @@ public class QuickStartFailState extends DriveState {
         target.world.addParticle(
                 ParticleTypes.EXPLOSION,
                 target.getX(),
-                target.getY(),
+                target.getY() + 0.5,
                 target.getZ(),
-                1.0D,
-                0.0D,
-                0.0D);
+                0,
+                0,
+                0);
     }
 }

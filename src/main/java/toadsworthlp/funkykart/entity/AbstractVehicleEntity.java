@@ -154,6 +154,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
                 stateMachine.setState(states.get(remoteState));
             }
 
+            stateMachine.tick();
             updateFov();
         } else {
             // Possibly state-changing actions

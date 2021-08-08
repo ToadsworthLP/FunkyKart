@@ -1,5 +1,7 @@
 package toadsworthlp.funkykart.entity.state;
 
+import net.fabricmc.loader.util.sat4j.core.Vec;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Vec3d;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 import toadsworthlp.funkykart.input.InputAxis;
@@ -43,7 +45,17 @@ public class DriveState implements IState<AbstractVehicleEntity> {
 
     }
 
-    public double getTraction(AbstractVehicleEntity target) {
-        return target.getVehicleTraction();
+    protected void spawnExhaustParticles(AbstractVehicleEntity target, int tickCount) {
+        if(target.stateMachine.getStateChangeTime() % tickCount == 0) {
+            Vec3d vel = target.getRotationVector().multiply(-0.1);
+            target.world.addParticle(
+                    ParticleTypes.SMOKE,
+                    target.getX(),
+                    target.getY() + 0.5,
+                    target.getZ(),
+                    vel.x,
+                    vel.y,
+                    vel.z);
+        }
     }
 }
