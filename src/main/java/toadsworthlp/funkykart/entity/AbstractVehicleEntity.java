@@ -56,7 +56,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public StateMachine<AbstractVehicleEntity> stateMachine;
     public BiMap<VehicleState, IState<AbstractVehicleEntity>> states = HashBiMap.create();
     public BiMap<IState<AbstractVehicleEntity>, VehicleState> inverseStates = states.inverse();
-    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL }
+    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL, REVERSE }
 
     // Movement variables
 
@@ -96,6 +96,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         states.put(VehicleState.BRAKE, new BrakeState());
         states.put(VehicleState.QUICK_START_CHARGE, new QuickStartChargeState());
         states.put(VehicleState.QUICK_START_FAIL, new QuickStartFailState());
+        states.put(VehicleState.REVERSE, new ReverseState());
 
         stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
             VehicleState stateEnum = inverseStates.get(next);
