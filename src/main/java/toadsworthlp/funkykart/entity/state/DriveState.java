@@ -19,7 +19,7 @@ public class DriveState implements IState<AbstractVehicleEntity> {
 
         double currentTargetDirDifferenceLength = target.currentDirection.subtract(target.targetDirection).length();
         if(currentTargetDirDifferenceLength > 0.05) {
-            target.currentDirection = target.currentDirection.lerp(target.targetDirection, target.getVehicleTraction() / currentTargetDirDifferenceLength);
+            target.currentDirection = target.currentDirection.lerp(target.targetDirection, (target.getVehicleTraction() * target.getTractionMultiplier()) / currentTargetDirDifferenceLength);
         } else {
             target.currentDirection = target.targetDirection;
         }

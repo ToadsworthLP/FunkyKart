@@ -27,7 +27,7 @@ public class BrakeState extends DriveState {
                 return;
             }
 
-            if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleBrakeForce();
+            if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleBrakeForce() * target.getTractionMultiplier();
             if(target.currentSpeed < target.targetSpeed) target.currentSpeed = target.targetSpeed;
 
             if(target.currentSpeed < STEER_VECTOR_RESET_SPEED) target.currentDirection = Vec3d.ZERO;

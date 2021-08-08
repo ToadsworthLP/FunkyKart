@@ -23,7 +23,7 @@ public class StandState extends DriveState {
             return;
         }
 
-        if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleDeceleration();
+        if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleDeceleration() * target.getTractionMultiplier();
         if(target.currentSpeed < target.targetSpeed) target.currentSpeed = target.targetSpeed;
 
         target.spawnExhaustParticles(target, 5);

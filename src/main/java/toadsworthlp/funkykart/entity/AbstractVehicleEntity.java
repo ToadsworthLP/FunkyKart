@@ -168,7 +168,6 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
                 } else {
                     gravityStrength = 1;
                 }
-
             }
 
             stateMachine.tick();
@@ -214,12 +213,27 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         this.dataTracker.set(ROAD_BLOCKS, roadBlocks);
     }
 
+    // Environmental stat multipliers
+
     public double getTargetSpeedMultiplier() {
         Block blockBelow = this.world.getBlockState(this.getBlockPos().subtract(new Vec3i(0, 1, 0))).getBlock();
         if(blockBelow.equals(Blocks.AIR) || roadBlocks.contains(blockBelow)) {
             return 1;
         } else {
             return getVehicleOffroadMultiplier();
+        }
+    }
+
+    public double getTractionMultiplier() {
+        Block blockBelow = this.world.getBlockState(this.getBlockPos().subtract(new Vec3i(0, 1, 0))).getBlock();
+        if(blockBelow.equals(Blocks.ICE)
+                || blockBelow.equals(Blocks.BLUE_ICE)
+                || blockBelow.equals(Blocks.FROSTED_ICE)
+                || blockBelow.equals(Blocks.PACKED_ICE)
+        ) {
+            return 0.6;
+        } else {
+            return 1;
         }
     }
 
