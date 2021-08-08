@@ -18,19 +18,17 @@ public class QuickStartChargeState extends DriveState {
 
     @Override
     public void tick(AbstractVehicleEntity target) {
+        if(target.stateMachine.getStateChangeTime() > FAIL_DELAY) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.QUICK_START_FAIL));
+        }
+
         if(!(((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()
         && ((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState())) {
-            // TODO set to correct states and apply boost
             if(target.stateMachine.getStateChangeTime() > SUCCESS_DELAY) {
-                if(target.stateMachine.getStateChangeTime() < FAIL_DELAY) {
-                    System.out.println("SUCESS");
-                    target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
-                } else {
-                    System.out.println("TOO LONG");
-                    target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
-                }
+                target.boostTime += 20;
+                target.currentSpeed = target.targetSpeed * target.getTargetSpeedMultiplier();
+                target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
             } else {
-                System.out.println("TOO SHORT");
                 target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
             }
 

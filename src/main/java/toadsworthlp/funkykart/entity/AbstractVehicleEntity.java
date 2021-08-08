@@ -31,10 +31,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import toadsworthlp.funkykart.client.FunkyKartClient;
-import toadsworthlp.funkykart.entity.state.BrakeState;
-import toadsworthlp.funkykart.entity.state.GasState;
-import toadsworthlp.funkykart.entity.state.QuickStartChargeState;
-import toadsworthlp.funkykart.entity.state.StandState;
+import toadsworthlp.funkykart.entity.state.*;
 import toadsworthlp.funkykart.input.BaseInputAxis;
 import toadsworthlp.funkykart.input.BooleanInputAxis;
 import toadsworthlp.funkykart.input.InputAxis;
@@ -58,7 +55,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public StateMachine<AbstractVehicleEntity> stateMachine;
     public BiMap<VehicleState, IState<AbstractVehicleEntity>> states = HashBiMap.create();
     public BiMap<IState<AbstractVehicleEntity>, VehicleState> inverseStates = states.inverse();
-    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE }
+    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL }
 
     // Movement variables
 
@@ -68,6 +65,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public Vec3d currentDirection = Vec3d.ZERO;
     public Vec3d targetDirection = Vec3d.ZERO;
     public double boostTime = 0;
+    public double boostStrength = 1;
 
     public final Vec3d up = new Vec3d(0, 1, 0);
     public final Vec3d gravityDir = up.multiply(-1.25);
@@ -96,6 +94,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         states.put(VehicleState.GAS, new GasState());
         states.put(VehicleState.BRAKE, new BrakeState());
         states.put(VehicleState.QUICK_START_CHARGE, new QuickStartChargeState());
+        states.put(VehicleState.QUICK_START_FAIL, new QuickStartFailState());
 
         stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
             VehicleState stateEnum = inverseStates.get(next);
@@ -173,6 +172,11 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             stateMachine.tick();
             setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
 
+            if(boostTime > 0) {
+                setVelocity(getVelocity().add(currentDirection.multiply(boostStrength)));
+                boostTime--;
+            }
+
             boolean hitWall = checkHitWall();
             if(hitWall) currentSpeed /= 2;
         }
@@ -229,7 +233,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     private void updateFov() {
         Entity player = MinecraftClient.getInstance().player;
         if(player.hasVehicle() && player.getVehicle() == this) {
-            FunkyKartClient.TARGET_FOV_MULTIPLIER = 1 + (currentSpeed/3);
+            FunkyKartClient.TARGET_FOV_MULTIPLIER = 1 + (currentSpeed/4);
         }
     }
 
