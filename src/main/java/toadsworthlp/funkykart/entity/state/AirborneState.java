@@ -20,19 +20,19 @@ public class AirborneState implements IState<AbstractVehicleEntity> {
 
     @Override
     public void tick(AbstractVehicleEntity target) {
-        if(target.isOnGround()) {
-            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
-        }
-
         if(target.stateMachine.getStateChangeTime() < COYOTE_TIME &&
-            ((BooleanInputAxis) target.inputs.get(InputAxis.JUMP)).getCurrentState() &&
-            !justJumped &&
-            !trick
+                ((BooleanInputAxis) target.inputs.get(InputAxis.JUMP)).getCurrentState() &&
+                !justJumped &&
+                !trick
         ) {
             spawnTrickEffect(target);
             trick = true;
             target.boostTime += 10;
-            System.out.println("Trick");
+        }
+
+        if(target.isOnGround()) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
+            return;
         }
 
         if(!target.world.isClient()) {

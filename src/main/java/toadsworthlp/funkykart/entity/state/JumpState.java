@@ -25,8 +25,8 @@ public class JumpState extends DriveState {
         if(target.isOnGround()) {
             if(target.stateMachine.getStateChangeTime() > MIN_JUMP_DURATION) {
                 target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
+                return;
             }
-            return;
         } else if(target.stateMachine.getStateChangeTime() >= MAX_JUMP_DURATION) {
             target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.AIRBORNE));
             return;

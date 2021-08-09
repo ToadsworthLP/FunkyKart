@@ -108,8 +108,6 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
             VehicleState stateEnum = inverseStates.get(next);
             this.dataTracker.set(TRACKED_STATE_NAME, stateEnum.name());
-
-            if(!world.isClient()) System.out.println("State changed to " + stateEnum.name());
         });
 
         inputs.put(InputAxis.STEER, new Vec3dInputAxis(Vec3d.ZERO));
