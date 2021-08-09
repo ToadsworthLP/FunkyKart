@@ -5,5 +5,6 @@ import java.lang.reflect.Type;
 public enum InputAxis {
     STEER,
     GAS,
-    BRAKE
+    BRAKE,
+    JUMP
 }

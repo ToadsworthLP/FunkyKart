@@ -31,5 +31,12 @@ public class LambdaControlsCompat implements CompatHandler {
                 .category(ButtonBinding.MOVEMENT_CATEGORY)
                 .linkKeybind(FunkyKartClient.BRAKE_KEY)
                 .register();
+
+        new ButtonBinding.Builder(new Identifier(FunkyKart.MODID, "jump"))
+                .buttons(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER)
+                .onlyInGame()
+                .category(ButtonBinding.MOVEMENT_CATEGORY)
+                .linkKeybind(FunkyKartClient.JUMP_KEY)
+                .register();
     }
 }

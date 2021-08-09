@@ -17,27 +17,31 @@ public class BrakeState extends DriveState {
 
     @Override
     public void tick(AbstractVehicleEntity target) {
-        if(!target.world.isClient()) {
-            if(!((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()) {
-                target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
-                return;
-            } else if(target.stateMachine.getStateChangeTime() > REVERSE_DELAY && target.currentSpeed < STEER_VECTOR_RESET_SPEED) {
-                target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.REVERSE));
-                return;
-            }
-
-            if(((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState() && target.currentSpeed < STEER_VECTOR_RESET_SPEED) {
-                target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.QUICK_START_CHARGE));
-                return;
-            }
-
-            if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleBrakeForce() * target.getTractionMultiplier();
-            if(target.currentSpeed < target.targetSpeed) target.currentSpeed = target.targetSpeed;
-
-            if(target.currentSpeed < STEER_VECTOR_RESET_SPEED) target.currentDirection = Vec3d.ZERO;
+        if(!((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
+            return;
+        } else if(target.stateMachine.getStateChangeTime() > REVERSE_DELAY && target.currentSpeed < STEER_VECTOR_RESET_SPEED) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.REVERSE));
+            return;
         }
 
-        target.spawnExhaustParticles(target, 5);
+        if(((BooleanInputAxis) target.inputs.get(InputAxis.GAS)).getCurrentState() && target.currentSpeed < STEER_VECTOR_RESET_SPEED) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.QUICK_START_CHARGE));
+            return;
+        }
+
+        if(((BooleanInputAxis) target.inputs.get(InputAxis.JUMP)).getCurrentState()) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.JUMP));
+            return;
+        }
+
+        if(target.currentSpeed > target.targetSpeed) target.currentSpeed -= target.getVehicleBrakeForce() * target.getTractionMultiplier();
+        if(target.currentSpeed < target.targetSpeed) target.currentSpeed = target.targetSpeed;
+
+        if(target.currentSpeed < STEER_VECTOR_RESET_SPEED) target.currentDirection = Vec3d.ZERO;
+
+        target.spawnExhaustParticles(5);
+        airborneCheck(target);
         super.tick(target);
     }
 }

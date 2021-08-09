@@ -19,6 +19,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -56,17 +58,18 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public StateMachine<AbstractVehicleEntity> stateMachine;
     public BiMap<VehicleState, IState<AbstractVehicleEntity>> states = HashBiMap.create();
     public BiMap<IState<AbstractVehicleEntity>, VehicleState> inverseStates = states.inverse();
-    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL, REVERSE }
+    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL, REVERSE, AIRBORNE, JUMP, DRIFT }
 
     // Movement variables
 
     public double currentSpeed = 0;
     public double targetSpeed = 0;
-    public double gravityStrength = 1;
+    public double gravityStrength = 0.75;
     public Vec3d currentDirection = Vec3d.ZERO;
     public Vec3d targetDirection = Vec3d.ZERO;
     public double boostTime = 0;
-    public double boostStrength = 1;
+    public double boostStrength = 0.5;
+    public double verticalSpeed = 0;
 
     public final Vec3d up = new Vec3d(0, 1, 0);
     public final Vec3d gravityDir = up.multiply(-1.25);
@@ -83,6 +86,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     private static final TrackedData<Vec3d> CURRENT_DIRECTION = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
     private static final TrackedData<Vec3d> TARGET_DIRECTION = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.VECTOR3);
     private static final TrackedData<Double> BOOST_TIME = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
+    private static final TrackedData<Double> VERTICAL_SPEED = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.DOUBLE);
     private static final TrackedData<Set<Block>> ROAD_BLOCKS = DataTracker.registerData(AbstractVehicleEntity.class, ExtraTrackedDataHandlers.BLOCK_SET);
 
     private static final String ROAD_BLOCKS_KEY = "RoadBlocks";
@@ -97,18 +101,24 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         states.put(VehicleState.QUICK_START_CHARGE, new QuickStartChargeState());
         states.put(VehicleState.QUICK_START_FAIL, new QuickStartFailState());
         states.put(VehicleState.REVERSE, new ReverseState());
+        states.put(VehicleState.AIRBORNE, new AirborneState());
+        states.put(VehicleState.JUMP, new JumpState());
+        states.put(VehicleState.DRIFT, new DriftState());
 
         stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
             VehicleState stateEnum = inverseStates.get(next);
             this.dataTracker.set(TRACKED_STATE_NAME, stateEnum.name());
+
+            if(!world.isClient()) System.out.println("State changed to " + stateEnum.name());
         });
 
         inputs.put(InputAxis.STEER, new Vec3dInputAxis(Vec3d.ZERO));
         inputs.put(InputAxis.GAS, new BooleanInputAxis(false));
         inputs.put(InputAxis.BRAKE, new BooleanInputAxis(false));
+        inputs.put(InputAxis.JUMP, new BooleanInputAxis(false));
 
         setCustomName(getVehicleName());
-        stepHeight = 1;
+        stepHeight = 1.0f;
     }
 
     public abstract Text getVehicleName();
@@ -149,6 +159,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             currentDirection = this.dataTracker.get(CURRENT_DIRECTION);
             targetDirection = this.dataTracker.get(TARGET_DIRECTION);
             boostTime = this.dataTracker.get(BOOST_TIME);
+            verticalSpeed = this.dataTracker.get(VERTICAL_SPEED);
 
             VehicleState localState = inverseStates.get(stateMachine.getState());
             VehicleState remoteState = VehicleState.valueOf(dataTracker.get(TRACKED_STATE_NAME));
@@ -165,22 +176,30 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             if(hasPassengers()) {
                 if(isSubmergedInWater()) {
                     getFirstPassenger().setAir(getFirstPassenger().getMaxAir());
-                    gravityStrength = 0.2;
+                    gravityStrength = 0.15;
                 } else {
-                    gravityStrength = 1;
+                    gravityStrength = 0.75;
                 }
             }
 
             stateMachine.tick();
             setVelocity(getVelocity().add(gravityDir.multiply(gravityStrength)));
 
-            if(boostTime > 0) {
-                setVelocity(getVelocity().add(currentDirection.multiply(boostStrength)));
-                boostTime--;
+            if(verticalSpeed > 0) {
+                setVelocity(getVelocity().add(up.multiply(verticalSpeed)));
+                verticalSpeed -= gravityStrength;
+                if(verticalSpeed <= 0) verticalSpeed = 0;
             }
 
             boolean hitWall = checkHitWall();
             if(hitWall) currentSpeed /= 2;
+
+            if(boostTime > 0 && isOnGround()) {
+                setVelocity(getVelocity().add(currentDirection.multiply(boostStrength)));
+                currentSpeed = targetSpeed * getTargetSpeedMultiplier();
+                boostTime--;
+                System.out.println("boost");
+            }
         }
 
         if(hasPassengers()) {
@@ -192,12 +211,15 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
             }
         }
 
-        dataTracker.set(CURRENT_SPEED, currentSpeed);
-        dataTracker.set(TARGET_SPEED, targetSpeed);
-        dataTracker.set(GRAVITY_STRENGTH, gravityStrength);
-        dataTracker.set(CURRENT_DIRECTION, currentDirection);
-        dataTracker.set(TARGET_DIRECTION, targetDirection);
-        dataTracker.set(BOOST_TIME, boostTime);
+        if(!this.world.isClient()) {
+            dataTracker.set(CURRENT_SPEED, currentSpeed);
+            dataTracker.set(TARGET_SPEED, targetSpeed);
+            dataTracker.set(GRAVITY_STRENGTH, gravityStrength);
+            dataTracker.set(CURRENT_DIRECTION, currentDirection);
+            dataTracker.set(TARGET_DIRECTION, targetDirection);
+            dataTracker.set(BOOST_TIME, boostTime);
+            dataTracker.set(VERTICAL_SPEED, verticalSpeed);
+        }
     }
 
     public void onPlayerDismounted() {
@@ -250,14 +272,16 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
 
     // Particle effects
 
-    public void spawnExhaustParticles(AbstractVehicleEntity target, int pauseTicks) {
-        if(this.hasPassengers() && target.stateMachine.getStateChangeTime() % pauseTicks == 0) {
-            Vec3d vel = target.getRotationVector().multiply(-0.1);
-            target.world.addParticle(
-                    ParticleTypes.SMOKE,
-                    target.getX(),
-                    target.getY() + 0.5,
-                    target.getZ(),
+    public void spawnExhaustParticles(int pauseTicks) {
+        ParticleEffect type = boostTime > 0 ? ParticleTypes.FLAME : ParticleTypes.SMOKE;
+
+        if(this.hasPassengers() && stateMachine.getStateChangeTime() % pauseTicks == 0) {
+            Vec3d vel = getRotationVector().multiply(-0.1);
+            world.addParticle(
+                    type,
+                    getX(),
+                    getY() + 0.5,
+                    getZ(),
                     vel.x,
                     vel.y,
                     vel.z);
@@ -325,6 +349,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         this.dataTracker.startTracking(CURRENT_DIRECTION, currentDirection);
         this.dataTracker.startTracking(TARGET_DIRECTION, targetDirection);
         this.dataTracker.startTracking(BOOST_TIME, boostTime);
+        this.dataTracker.startTracking(VERTICAL_SPEED, verticalSpeed);
     }
 
     // Make it rideable underwater

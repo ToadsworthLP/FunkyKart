@@ -32,6 +32,7 @@ public class FunkyKartClient implements ClientModInitializer {
     public static InputManager VEHICLE_INPUT;
     public static KeyBinding GAS_KEY;
     public static KeyBinding BRAKE_KEY;
+    public static KeyBinding JUMP_KEY;
 
     public static double TARGET_FOV_MULTIPLIER = 1;
     public static double CURRENT_FOV_MULTIPLIER = 1;
@@ -66,6 +67,14 @@ public class FunkyKartClient implements ClientModInitializer {
                 KEYBIND_CATEGORY
         ));
         VEHICLE_INPUT.registerInput(InputAxis.BRAKE, BRAKE_KEY);
+
+        JUMP_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                KEYBIND_PREFIX + "jump",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_D,
+                KEYBIND_CATEGORY
+        ));
+        VEHICLE_INPUT.registerInput(InputAxis.JUMP, JUMP_KEY);
     }
 
     private void initializeRendering() {

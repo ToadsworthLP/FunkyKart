@@ -24,6 +24,7 @@ public class QuickStartFailState extends DriveState {
             target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.STAND));
         }
 
+        airborneCheck(target);
     }
 
     private void spawnExplosionEffect(AbstractVehicleEntity target) {

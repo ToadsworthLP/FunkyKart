@@ -23,10 +23,16 @@ public class GasState extends DriveState {
             return;
         }
 
+        if(((BooleanInputAxis) target.inputs.get(InputAxis.JUMP)).getCurrentState() && target.stateMachine.getStateChangeTime() > JumpState.JUMP_COOLDOWN) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.JUMP));
+            return;
+        }
+
         if(target.currentSpeed < target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed += target.getVehicleAcceleration();
         if(target.currentSpeed > target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed = target.targetSpeed * target.getTargetSpeedMultiplier();
 
-        target.spawnExhaustParticles(target, 1);
+        target.spawnExhaustParticles(1);
+        airborneCheck(target);
         super.tick(target);
     }
 }

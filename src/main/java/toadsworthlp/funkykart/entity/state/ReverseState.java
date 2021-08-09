@@ -23,7 +23,8 @@ public class ReverseState extends DriveState {
         if(target.currentSpeed > target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed -= target.getVehicleAcceleration();
         if(target.currentSpeed < target.targetSpeed * target.getTargetSpeedMultiplier()) target.currentSpeed = target.targetSpeed * target.getTargetSpeedMultiplier();
 
-        target.spawnExhaustParticles(target, 2);
+        target.spawnExhaustParticles(2);
+        airborneCheck(target);
         super.tick(target);
     }
 }

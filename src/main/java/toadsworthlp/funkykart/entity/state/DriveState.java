@@ -42,4 +42,10 @@ public class DriveState implements IState<AbstractVehicleEntity> {
     public void exit(AbstractVehicleEntity target, IState<AbstractVehicleEntity> next) {
 
     }
+
+    protected void airborneCheck(AbstractVehicleEntity target) {
+        if(!target.isOnGround()) {
+            target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.AIRBORNE));
+        }
+    }
 }
