@@ -9,7 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 import toadsworthlp.funkykart.input.InputAxis;
 
-public class VehicleUpdater {
+public class VehicleUpdateReceiver {
     public static void receiveUpdate(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         int targetId = buf.readInt();
 

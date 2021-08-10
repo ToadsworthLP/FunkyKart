@@ -1,29 +1,27 @@
 package toadsworthlp.funkykart.client;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.SmoothUtil;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import toadsworthlp.funkykart.FunkyKart;
 import toadsworthlp.funkykart.client.compat.LambdaControlsCompat;
 import toadsworthlp.funkykart.client.input.InputManager;
 import toadsworthlp.funkykart.client.model.KartEntityModel;
+import toadsworthlp.funkykart.client.network.EffectEventReceiver;
 import toadsworthlp.funkykart.client.render.KartEntityRenderer;
 import toadsworthlp.funkykart.input.InputAxis;
 
 @net.fabricmc.api.Environment(net.fabricmc.api.EnvType.CLIENT)
 public class FunkyKartClient implements ClientModInitializer {
-
     public static EntityModelLayer KART_MODEL_LAYER;
 
     public static final String KEYBIND_CATEGORY = "category." + FunkyKart.MODID + ".controls";
@@ -49,6 +47,8 @@ public class FunkyKartClient implements ClientModInitializer {
         initializeRendering();
         initializeKeybinds();
         initializeCompat();
+
+        ClientPlayNetworking.registerGlobalReceiver(FunkyKart.EFFECTS_EVENT_CHANNEL, EffectEventReceiver::receive);
     }
 
     private void initializeKeybinds() {

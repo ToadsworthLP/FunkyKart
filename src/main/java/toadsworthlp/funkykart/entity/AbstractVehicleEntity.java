@@ -58,7 +58,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public StateMachine<AbstractVehicleEntity> stateMachine;
     public BiMap<VehicleState, IState<AbstractVehicleEntity>> states = HashBiMap.create();
     public BiMap<IState<AbstractVehicleEntity>, VehicleState> inverseStates = states.inverse();
-    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL, REVERSE, AIRBORNE, JUMP, DRIFT }
+    public enum VehicleState { STAND, GAS, BRAKE, QUICK_START_CHARGE, QUICK_START_FAIL, REVERSE, AIRBORNE, JUMP, DRIFT, TRICK }
 
     // Movement variables
 
@@ -104,6 +104,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
         states.put(VehicleState.AIRBORNE, new AirborneState());
         states.put(VehicleState.JUMP, new JumpState());
         states.put(VehicleState.DRIFT, new DriftState());
+        states.put(VehicleState.TRICK, new TrickState());
 
         stateMachine = new StateMachine<>(this, states.get(VehicleState.STAND), (IState<AbstractVehicleEntity> previous, IState<AbstractVehicleEntity> next) -> {
             VehicleState stateEnum = inverseStates.get(next);
@@ -196,7 +197,6 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
                 setVelocity(getVelocity().add(currentDirection.multiply(boostStrength)));
                 currentSpeed = targetSpeed * getTargetSpeedMultiplier();
                 boostTime--;
-                System.out.println("boost");
             }
         }
 
@@ -283,6 +283,25 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
                     vel.x,
                     vel.y,
                     vel.z);
+        }
+    }
+
+    public void spawnTrickEffect() {
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                double xVel = Math.sin(i) * Math.cos(j);
+                double yVel = Math.sin(i) * Math.sin(j);
+                double zVel = Math.cos(i);
+
+                world.addParticle(
+                        ParticleTypes.CRIT,
+                        getX(),
+                        getY() + 0.5,
+                        getZ(),
+                        xVel,
+                        yVel,
+                        zVel);
+            }
         }
     }
 

@@ -13,11 +13,14 @@ import net.minecraft.util.registry.Registry;
 import toadsworthlp.funkykart.entity.KartEntity;
 import toadsworthlp.funkykart.item.RoadConfiguratorItem;
 import toadsworthlp.funkykart.item.VehicleSpawnerItem;
-import toadsworthlp.funkykart.network.VehicleUpdater;
+import toadsworthlp.funkykart.network.VehicleUpdateReceiver;
 
 public class FunkyKart implements ModInitializer {
     public static final String MODID = "funkykart";
+
     public static final Identifier VEHICLE_UPDATE_CHANNEL = new Identifier(FunkyKart.MODID, "vehicle_update");
+    public static final Identifier EFFECTS_EVENT_CHANNEL = new Identifier(FunkyKart.MODID, "effects");
+
 
     public static EntityType<KartEntity> KART_ENTITY;
 
@@ -29,7 +32,7 @@ public class FunkyKart implements ModInitializer {
         initializeEntities();
         initializeItems();
 
-        ServerPlayNetworking.registerGlobalReceiver(FunkyKart.VEHICLE_UPDATE_CHANNEL, VehicleUpdater::receiveUpdate);
+        ServerPlayNetworking.registerGlobalReceiver(FunkyKart.VEHICLE_UPDATE_CHANNEL, VehicleUpdateReceiver::receiveUpdate);
     }
 
     private void initializeItems() {

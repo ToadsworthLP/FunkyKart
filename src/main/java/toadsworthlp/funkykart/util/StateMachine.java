@@ -28,12 +28,12 @@ public class StateMachine<T> {
 
     public void setState(IState<T> newState) {
         IState<T> previousState = currentState;
+        observer.stateChanged(previousState, newState);
 
         currentState.exit(target, newState);
-        stateChangeTimer = 0;
-        observer.stateChanged(previousState, newState);
-        newState.enter(target, currentState);
         currentState = newState;
+        stateChangeTimer = 0;
+        currentState.enter(target, previousState);
 
         tick();
     }
