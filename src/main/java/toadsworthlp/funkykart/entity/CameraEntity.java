@@ -14,18 +14,27 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Arm;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import org.lwjgl.system.MathUtil;
+import toadsworthlp.funkykart.util.IState;
 import toadsworthlp.funkykart.util.Vec3dUtil;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings("EntityConstructor")
 public class CameraEntity extends LivingEntity {
     public static final EntityDimensions DIMENSIONS = EntityDimensions.fixed(0.625f, 0.625f);
+
+    private static final Set<AbstractVehicleEntity.VehicleState> freezeCamStates = new HashSet<>() {{
+        add(AbstractVehicleEntity.VehicleState.QUICK_START_FAIL);
+    }};
 
     private static final double CAMERA_DISTANCE = 5;
     private static final double CAMERA_HEIGHT = 2;
@@ -96,14 +105,16 @@ public class CameraEntity extends LivingEntity {
     }
 
     private void updateCameraMovement() {
+        if(freezeCamStates.contains(target.inverseStates.get(target.stateMachine.getState()))) return;
+
         Vec3d targetPosition = target.getPos()
                 .add(target.targetDirection.multiply(CAMERA_DISTANCE * -1))
                 .add(target.up.multiply(CAMERA_HEIGHT));
 
         setPosition(targetPosition);
 
-        prevHeadYaw = getHeadYaw();
         prevYaw = getYaw();
+        prevHeadYaw = getHeadYaw();
 
         setRotation(target.getYaw(), 0);
         setHeadYaw(target.getHeadYaw());

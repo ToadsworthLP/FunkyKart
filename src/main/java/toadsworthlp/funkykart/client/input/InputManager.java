@@ -41,6 +41,7 @@ public class InputManager {
         if(!(client.player.getVehicle() instanceof AbstractVehicleEntity)) {
             if(ridingLastFrame) { // Just dismounted, lock the mouse cursor
                 client.mouse.lockCursor();
+                client.gameRenderer.setRenderHand(true);
             }
 
             ridingLastFrame = false;
@@ -51,7 +52,10 @@ public class InputManager {
 
         ridingLastFrame = true;
 
-        if(client.mouse.isCursorLocked()) client.mouse.unlockCursor();
+        if(client.mouse.isCursorLocked()) {
+            client.mouse.unlockCursor();
+            client.gameRenderer.setRenderHand(false);
+        };
 
         for (IClientInputAxis entry : inputs.values()) {
             entry.updateInput();

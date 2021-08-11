@@ -8,10 +8,16 @@ import toadsworthlp.funkykart.util.IState;
 public class QuickStartFailState extends DriveState {
     public static final int DELAY = 30;
 
+    public float initialYaw;
+    public float initialHeadYaw;
+
     @Override
     public void enter(AbstractVehicleEntity target, IState<AbstractVehicleEntity> previous) {
         target.targetSpeed = 0;
         spawnExplosionEffect(target);
+
+        initialYaw = target.getYaw();
+        initialHeadYaw = target.getHeadYaw();
     }
 
     @Override
@@ -25,6 +31,12 @@ public class QuickStartFailState extends DriveState {
         }
 
         airborneCheck(target);
+    }
+
+    @Override
+    public void exit(AbstractVehicleEntity target, IState<AbstractVehicleEntity> next) {
+        target.setYaw(initialYaw);
+        target.setHeadYaw(initialHeadYaw);
     }
 
     private void spawnExplosionEffect(AbstractVehicleEntity target) {
