@@ -1,22 +1,32 @@
 package toadsworthlp.funkykart.client.input;
 
+import dev.lambdaurora.lambdacontrols.client.ButtonState;
+import dev.lambdaurora.lambdacontrols.client.controller.InputManager;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import toadsworthlp.funkykart.client.compat.LambdaControlsCompat;
 import toadsworthlp.funkykart.input.Vec3dInputAxis;
 
-public class MouseClientInputAxis extends Vec3dInputAxis implements IClientInputAxis<Vec3d, Vec3dInputAxis>{
+public class SteerClientInputAxis extends Vec3dInputAxis implements IClientInputAxis<Vec3d, Vec3dInputAxis>{
     private static final double ROUNDING_DELTA = 0.01;
     private static final double DEADZONE = 0.05;
 
-    public MouseClientInputAxis(Vec3d initialState) {
+    public SteerClientInputAxis(Vec3d initialState) {
         super(initialState);
     }
 
     @Override
     public void updateInput() {
+        // Gamepad support if lambdacontrols is loaded
+        if(FabricLoader.getInstance().isModLoaded("lambdacontrols") && LambdaControlsCompat.isGamepadInput()) {
+            setState(new Vec3d(LambdaControlsCompat.getJoystickSteerX(), LambdaControlsCompat.getJoystickSteerY(), 0));
+            return;
+        }
+
         MinecraftClient client = MinecraftClient.getInstance();
         if(client.mouse.wasLeftButtonClicked()) {
             setState(Vec3d.ZERO);

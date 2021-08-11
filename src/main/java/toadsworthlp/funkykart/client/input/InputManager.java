@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
@@ -23,7 +22,7 @@ public class InputManager {
     private boolean ridingLastFrame = false;
 
     public InputManager() {
-        inputs.put(InputAxis.STEER, new MouseClientInputAxis(Vec3d.ZERO)); // Needs to be set when joining world
+        inputs.put(InputAxis.STEER, new SteerClientInputAxis(Vec3d.ZERO)); // Needs to be set when joining world
         ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
     }
 
