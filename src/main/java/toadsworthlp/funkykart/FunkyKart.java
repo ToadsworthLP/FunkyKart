@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import toadsworthlp.funkykart.entity.CameraEntity;
 import toadsworthlp.funkykart.entity.KartEntity;
 import toadsworthlp.funkykart.item.RoadConfiguratorItem;
 import toadsworthlp.funkykart.item.VehicleSpawnerItem;
@@ -21,7 +22,7 @@ public class FunkyKart implements ModInitializer {
     public static final Identifier VEHICLE_UPDATE_CHANNEL = new Identifier(FunkyKart.MODID, "vehicle_update");
     public static final Identifier EFFECTS_EVENT_CHANNEL = new Identifier(FunkyKart.MODID, "effects");
 
-
+    public static EntityType<CameraEntity> CAMERA_ENTITY;
     public static EntityType<KartEntity> KART_ENTITY;
 
     public static Item KART_SPAWNER_ITEM;
@@ -44,6 +45,16 @@ public class FunkyKart implements ModInitializer {
     }
 
     private void initializeEntities() {
+        CAMERA_ENTITY = Registry.register(
+                Registry.ENTITY_TYPE,
+                new Identifier(MODID, "camera"),
+                FabricEntityTypeBuilder.create(SpawnGroup.MISC, CameraEntity::new)
+                        .dimensions(CameraEntity.DIMENSIONS)
+                        .build()
+        );
+
+        FabricDefaultAttributeRegistry.register(CAMERA_ENTITY, CameraEntity.createLivingAttributes());
+
         KART_ENTITY = Registry.register(
                 Registry.ENTITY_TYPE,
                 new Identifier(MODID, "kart"),

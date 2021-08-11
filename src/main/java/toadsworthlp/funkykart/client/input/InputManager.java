@@ -1,17 +1,18 @@
 package toadsworthlp.funkykart.client.input;
 
-import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
 import toadsworthlp.funkykart.FunkyKart;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 import toadsworthlp.funkykart.input.InputAxis;
+import toadsworthlp.funkykart.input.Vec3dInputAxis;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +20,10 @@ import java.util.Map;
 @net.fabricmc.api.Environment(net.fabricmc.api.EnvType.CLIENT)
 public class InputManager {
     private final Map<InputAxis, IClientInputAxis> inputs = new HashMap<>();
+    private boolean ridingLastFrame = false;
 
     public InputManager() {
-        inputs.put(InputAxis.STEER, new LookClientInputAxis(Vec3d.ZERO)); // Needs to be set when joining world
+        inputs.put(InputAxis.STEER, new MouseClientInputAxis(Vec3d.ZERO)); // Needs to be set when joining world
         ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
     }
 
@@ -29,10 +31,27 @@ public class InputManager {
         inputs.put(type, new ButtonClientInputAxis(false, keyBinding));
     }
 
+    public Vec3d getSteeringInput() {
+        return ((Vec3dInputAxis)inputs.get(InputAxis.STEER)).getCurrentState();
+    }
+
     private void clientTick(MinecraftClient client) {
         if(client.world == null) return;
 
-        if(!(client.player.getVehicle() instanceof AbstractVehicleEntity)) return;
+        if(!(client.player.getVehicle() instanceof AbstractVehicleEntity)) {
+            if(ridingLastFrame) { // Just dismounted, lock the mouse cursor
+                client.mouse.lockCursor();
+            }
+
+            ridingLastFrame = false;
+            return;
+        }
+
+        AbstractVehicleEntity vehicle = (AbstractVehicleEntity) client.player.getVehicle();
+
+        ridingLastFrame = true;
+
+        if(client.mouse.isCursorLocked()) client.mouse.unlockCursor();
 
         for (IClientInputAxis entry : inputs.values()) {
             entry.updateInput();

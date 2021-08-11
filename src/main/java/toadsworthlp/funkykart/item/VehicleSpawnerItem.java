@@ -15,7 +15,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+import toadsworthlp.funkykart.FunkyKart;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
+import toadsworthlp.funkykart.entity.CameraEntity;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -39,6 +41,7 @@ public class VehicleSpawnerItem<T extends Entity> extends Item {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
+
         if (!(world instanceof ServerWorld)) {
             return ActionResult.SUCCESS;
         } else {
@@ -58,6 +61,18 @@ public class VehicleSpawnerItem<T extends Entity> extends Item {
             if (newEntity instanceof AbstractVehicleEntity vehicle) {
                 vehicle.setRoadBlocks(defaultRoad);
                 itemStack.decrement(1);
+
+                CameraEntity camera = FunkyKart.CAMERA_ENTITY.spawn(
+                        (ServerWorld) world,
+                        null,
+                        null,
+                        null,
+                        vehicle.getBlockPos(),
+                        SpawnReason.MOB_SUMMONED,
+                        false,
+                        false
+                );
+                camera.setTarget(vehicle);
                 world.emitGameEvent(context.getPlayer(), GameEvent.ENTITY_PLACE, blockPos);
             }
 

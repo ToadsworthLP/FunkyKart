@@ -7,10 +7,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -22,6 +19,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -33,6 +31,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import toadsworthlp.funkykart.FunkyKart;
 import toadsworthlp.funkykart.client.FunkyKartClient;
 import toadsworthlp.funkykart.entity.state.*;
 import toadsworthlp.funkykart.input.BaseInputAxis;
@@ -393,6 +392,7 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     }
 
     // Some other stuff
+
     @Override
     public Iterable<ItemStack> getArmorItems() {
         return DefaultedList.of();
