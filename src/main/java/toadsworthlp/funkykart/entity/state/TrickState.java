@@ -6,6 +6,8 @@ import toadsworthlp.funkykart.network.EffectEventType;
 import toadsworthlp.funkykart.util.IState;
 
 public class TrickState implements IState<AbstractVehicleEntity> {
+    public static double TRICK_MIN_SPEED = 0.2;
+
     @Override
     public void enter(AbstractVehicleEntity target, IState<AbstractVehicleEntity> previous) {
         target.boostTime += 10;

@@ -6,7 +6,7 @@ import toadsworthlp.funkykart.input.InputAxis;
 import toadsworthlp.funkykart.util.IState;
 
 public class AirborneState implements IState<AbstractVehicleEntity> {
-    public static final int COYOTE_TIME = 3;
+    public static final int COYOTE_TIME = 4;
 
     @Override
     public void enter(AbstractVehicleEntity target, IState<AbstractVehicleEntity> previous) {
@@ -17,7 +17,8 @@ public class AirborneState implements IState<AbstractVehicleEntity> {
         // Only process state change to trick state on server to prevent the client from showing a wrong trick effect
         if(!target.world.isClient()) {
             if(target.stateMachine.getStateChangeTime() < COYOTE_TIME &&
-                    ((BooleanInputAxis) target.inputs.get(InputAxis.JUMP)).getCurrentState()) {
+                ((BooleanInputAxis) target.inputs.get(InputAxis.JUMP)).getCurrentState() &&
+                target.currentSpeed >= TrickState.TRICK_MIN_SPEED) {
                 target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.TRICK));
             }
         }
