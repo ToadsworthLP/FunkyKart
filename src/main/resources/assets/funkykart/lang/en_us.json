@@ -20,5 +20,9 @@
 
   "lambdacontrols.action.funkykart.gas": "Gas",
   "lambdacontrols.action.funkykart.brake": "Brake",
-  "lambdacontrols.action.funkykart.jump": "Jump/Drift"
+  "lambdacontrols.action.funkykart.jump": "Jump/Drift",
+  "lambdacontrols.action.funkykart.steer_x+": "Steer Right",
+  "lambdacontrols.action.funkykart.steer_x-": "Steer Left",
+  "lambdacontrols.action.funkykart.steer_y+": "Steer Up",
+  "lambdacontrols.action.funkykart.steer_y-": "Steer Down"
 }

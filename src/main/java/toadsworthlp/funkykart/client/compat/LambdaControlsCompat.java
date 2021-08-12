@@ -76,8 +76,8 @@ public class LambdaControlsCompat implements CompatHandler {
     }
 
     public static float getJoystickSteerY() {
-        return (InputManager.getBindingValue(LambdaControlsCompat.steerYNegBinding, InputManager.getBindingState(LambdaControlsCompat.steerYNegBinding)) -
-                InputManager.getBindingValue(LambdaControlsCompat.steerYPosBinding, InputManager.getBindingState(LambdaControlsCompat.steerYPosBinding)));
+        return (InputManager.getBindingValue(LambdaControlsCompat.steerYPosBinding, InputManager.getBindingState(LambdaControlsCompat.steerYPosBinding)) -
+                InputManager.getBindingValue(LambdaControlsCompat.steerYNegBinding, InputManager.getBindingState(LambdaControlsCompat.steerYNegBinding)));
     }
 
     public static boolean isGamepadInput() {

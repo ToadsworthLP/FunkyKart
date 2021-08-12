@@ -3,7 +3,6 @@ package toadsworthlp.funkykart.entity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -15,12 +14,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Arm;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import org.lwjgl.system.MathUtil;
-import toadsworthlp.funkykart.util.IState;
 import toadsworthlp.funkykart.util.Vec3dUtil;
 
 import java.util.HashSet;
@@ -36,8 +32,9 @@ public class CameraEntity extends LivingEntity {
         add(AbstractVehicleEntity.VehicleState.QUICK_START_FAIL);
     }};
 
-    private static final double CAMERA_DISTANCE = 5;
-    private static final double CAMERA_HEIGHT = 2;
+    private static final Vec3d CAMERA_OFFSET = new Vec3d(0, 2, 0);
+    private static final double CAMERA_DISTANCE = 6;
+    private static final double CAMERA_HEIGHT = 1;
 
     private static final TrackedData<Optional<UUID>> TARGET_UUID = DataTracker.registerData(CameraEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
     private static final String TARGET_UUID_KEY = "targetUuid";
@@ -107,17 +104,37 @@ public class CameraEntity extends LivingEntity {
     private void updateCameraMovement() {
         if(freezeCamStates.contains(target.inverseStates.get(target.stateMachine.getState()))) return;
 
-        Vec3d targetPosition = target.getPos()
-                .add(target.targetDirection.multiply(CAMERA_DISTANCE * -1))
+        Vec3d targetPosition = target.getPos().add(CAMERA_OFFSET);
+
+        Vec3d cameraPosition = targetPosition
+                .add(Vec3dUtil.projectOnPlane(target.getRotationVector(), Vec3dUtil.UP).normalize().multiply(CAMERA_DISTANCE * -1))
                 .add(target.up.multiply(CAMERA_HEIGHT));
 
-        setPosition(targetPosition);
+        BlockHitResult result = world.raycast(new RaycastContext(
+                targetPosition,
+                cameraPosition,
+                RaycastContext.ShapeType.COLLIDER,
+                RaycastContext.FluidHandling.NONE,
+                this
+        ));
+
+        Vec3d directionToTargetPos = cameraPosition.subtract(targetPosition).normalize();
+        cameraPosition = targetPosition.add(directionToTargetPos.multiply(result.getPos().subtract(targetPosition).length() - 0.5));
+
+        prevX = getX();
+        prevY = getY();
+        prevZ = getZ();
+
+        float targetYaw = target.getYaw();
+        float targetHeadYaw = target.getHeadYaw();
+
+        setPosition(cameraPosition);
 
         prevYaw = getYaw();
         prevHeadYaw = getHeadYaw();
 
-        setRotation(target.getYaw(), 0);
-        setHeadYaw(target.getHeadYaw());
+        setRotation(targetYaw, 20);
+        setHeadYaw(targetHeadYaw);
     }
 
     public void removeSelf() {
