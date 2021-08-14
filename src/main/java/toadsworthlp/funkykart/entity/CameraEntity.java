@@ -14,6 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Arm;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
@@ -126,14 +127,32 @@ public class CameraEntity extends LivingEntity {
         prevZ = getZ();
 
         float targetYaw = target.getYaw();
+        float targetBodyYaw = target.bodyYaw;
         float targetHeadYaw = target.getHeadYaw();
 
         setPosition(cameraPosition);
 
         prevYaw = getYaw();
+        prevBodyYaw = bodyYaw;
         prevHeadYaw = getHeadYaw();
 
+        float radialVelocity = MathHelper.subtractAngles(targetYaw, prevYaw);
+        if(Math.abs(prevYaw - targetYaw) > 180) {
+            prevYaw = radialVelocity;
+        }
+
+        radialVelocity = MathHelper.subtractAngles(targetBodyYaw, prevBodyYaw);
+        if(Math.abs(prevBodyYaw - targetBodyYaw) > 180) {
+            prevBodyYaw = radialVelocity;
+        }
+
+        radialVelocity = MathHelper.subtractAngles(targetHeadYaw, prevHeadYaw);
+        if(Math.abs(prevHeadYaw - targetHeadYaw) > 180) {
+            prevHeadYaw = radialVelocity;
+        }
+
         setRotation(targetYaw, 20);
+        setBodyYaw(targetBodyYaw);
         setHeadYaw(targetHeadYaw);
     }
 

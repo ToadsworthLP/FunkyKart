@@ -1,5 +1,6 @@
 package toadsworthlp.funkykart.entity.state;
 
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 import toadsworthlp.funkykart.input.InputAxis;
@@ -18,6 +19,9 @@ public class DriveState implements IState<AbstractVehicleEntity> {
         double steerX = steerDirection.x;
 
         float yaw = (float) (target.getYaw() + steerX * 5);
+
+        yaw = yaw % 360;
+
         target.setYaw(yaw);
         target.setBodyYaw(yaw);
         target.setHeadYaw(yaw);
