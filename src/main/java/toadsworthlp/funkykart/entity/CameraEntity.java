@@ -8,6 +8,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
@@ -16,6 +17,7 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import toadsworthlp.funkykart.util.Vec3dUtil;
@@ -47,7 +49,10 @@ public class CameraEntity extends LivingEntity {
     public CameraEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
         setInvisible(true);
+        setInvulnerable(true);
         setCustomNameVisible(false);
+        setNoGravity(true);
+        inanimate = true;
     }
 
     @Environment(EnvType.CLIENT)
@@ -126,9 +131,13 @@ public class CameraEntity extends LivingEntity {
         prevY = getY();
         prevZ = getZ();
 
-        float targetYaw = target.getYaw();
-        float targetBodyYaw = target.bodyYaw;
-        float targetHeadYaw = target.getHeadYaw();
+        float targetYaw;
+        float targetBodyYaw;
+        float targetHeadYaw;
+
+        targetYaw = MathHelper.wrapDegrees(target.getYaw());
+        targetBodyYaw = MathHelper.wrapDegrees(target.bodyYaw);
+        targetHeadYaw = MathHelper.wrapDegrees(target.getHeadYaw());
 
         setPosition(cameraPosition);
 
@@ -136,19 +145,9 @@ public class CameraEntity extends LivingEntity {
         prevBodyYaw = bodyYaw;
         prevHeadYaw = getHeadYaw();
 
-        float radialVelocity = MathHelper.subtractAngles(targetYaw, prevYaw);
-        if(Math.abs(prevYaw - targetYaw) > 180) {
-            prevYaw = radialVelocity;
-        }
-
-        radialVelocity = MathHelper.subtractAngles(targetBodyYaw, prevBodyYaw);
-        if(Math.abs(prevBodyYaw - targetBodyYaw) > 180) {
-            prevBodyYaw = radialVelocity;
-        }
-
-        radialVelocity = MathHelper.subtractAngles(targetHeadYaw, prevHeadYaw);
+        float radialVelocity = MathHelper.subtractAngles(targetHeadYaw, prevHeadYaw);
         if(Math.abs(prevHeadYaw - targetHeadYaw) > 180) {
-            prevHeadYaw = radialVelocity;
+            prevHeadYaw = targetHeadYaw + radialVelocity;
         }
 
         setRotation(targetYaw, 20);
@@ -172,6 +171,11 @@ public class CameraEntity extends LivingEntity {
     public void removeTarget() {
         this.dataTracker.set(TARGET_UUID, Optional.empty());
         this.target = null;
+    }
+
+    @Override
+    public boolean canTarget(LivingEntity target) {
+        return false; // Can't touch this
     }
 
     @Override
