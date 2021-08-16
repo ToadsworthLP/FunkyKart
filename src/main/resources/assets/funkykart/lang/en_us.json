@@ -13,6 +13,8 @@
   "message.funkykart.apply_road_blocks_no_vehicle": "Not a compatible vehicle",
   "message.funkykart.apply_road_blocks_sneak": "Sneak + right-click to apply configuration",
 
+  "gui.funkykart.kph_text": " km/h",
+
   "category.funkykart.controls": "FunkyKart",
   "key.funkykart.gas": "Gas",
   "key.funkykart.brake": "Brake",

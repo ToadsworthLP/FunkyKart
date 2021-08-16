@@ -20,6 +20,7 @@ import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -132,6 +133,10 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     public abstract double getVehicleBrakeForce();
 
     public abstract double getVehicleOffroadMultiplier();
+
+    public abstract double getVehicleSteeringSpeed();
+
+    public abstract double getVehicleSteeringDeceleration();
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {

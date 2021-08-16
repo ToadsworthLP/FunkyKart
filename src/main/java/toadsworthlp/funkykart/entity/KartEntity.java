@@ -28,26 +28,36 @@ public class KartEntity extends AbstractVehicleEntity{
 
     @Override
     public double getVehicleTraction() {
-        return 0.05;
+        return 0.1;
     }
 
     @Override
     public double getVehicleAcceleration() {
-        return 0.03;
+        return currentSpeed < 0.5 * getVehicleSpeed() ? 0.02 : 0.022 * (1-(currentSpeed/getVehicleSpeed()));
     }
 
     @Override
     public double getVehicleDeceleration() {
-        return 0.035;
+        return 0.03;
     }
 
     @Override
     public double getVehicleBrakeForce() {
-        return 0.12;
+        return 0.10;
     }
 
     @Override
     public double getVehicleOffroadMultiplier() {
-        return 0.3;
+        return 0.2;
+    }
+
+    @Override
+    public double getVehicleSteeringSpeed() {
+        return getVehicleSpeed() * 0.75;
+    }
+
+    @Override
+    public double getVehicleSteeringDeceleration() {
+        return 0.02;
     }
 }

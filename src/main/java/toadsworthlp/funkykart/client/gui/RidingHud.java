@@ -8,17 +8,20 @@ import toadsworthlp.funkykart.entity.AbstractVehicleEntity;
 public class RidingHud implements HudRenderCallback {
     private MinecraftClient client;
     public DirectionalInputHud inputHud;
+    public SpeedometerHud speedometerHud;
 
     public RidingHud(MinecraftClient client) {
         this.client = client;
         inputHud = new DirectionalInputHud(client);
+        speedometerHud = new SpeedometerHud(client);
         EVENT.register(this);
     }
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta) {
-        if(client.player != null && client.player.getVehicle() instanceof AbstractVehicleEntity) {
+        if(client.player != null && client.player.getVehicle() instanceof AbstractVehicleEntity vehicle) {
             inputHud.render(matrixStack, tickDelta);
+            speedometerHud.render(matrixStack, tickDelta, vehicle);
         }
     }
 }

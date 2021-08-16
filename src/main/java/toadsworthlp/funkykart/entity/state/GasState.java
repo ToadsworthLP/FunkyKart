@@ -6,13 +6,29 @@ import toadsworthlp.funkykart.input.InputAxis;
 import toadsworthlp.funkykart.util.IState;
 
 public class GasState extends DriveState {
+    protected double steeringPenalty;
+
     @Override
     public void enter(AbstractVehicleEntity target, IState<AbstractVehicleEntity> previous) {
         target.targetSpeed = target.getVehicleSpeed();
+        steeringPenalty = 0;
     }
 
     @Override
     public void tick(AbstractVehicleEntity target) {
+        if(isSteering) {
+            steeringPenalty += target.getVehicleSteeringDeceleration();
+            if(target.getVehicleSpeed() - steeringPenalty < target.getVehicleSteeringSpeed())  {
+                steeringPenalty = target.getVehicleSpeed() - target.getVehicleSteeringSpeed();
+            }
+        } else {
+            steeringPenalty = 0;
+        }
+
+        System.out.println(steeringPenalty);
+
+        target.targetSpeed = target.getVehicleSpeed() - steeringPenalty;
+
         if(((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()) {
             target.stateMachine.setState(target.states.get(AbstractVehicleEntity.VehicleState.BRAKE));
             return;

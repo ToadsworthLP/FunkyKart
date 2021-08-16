@@ -150,7 +150,7 @@ public class CameraEntity extends LivingEntity {
             prevHeadYaw = targetHeadYaw + radialVelocity;
         }
 
-        setRotation(targetYaw, 20);
+        setRotation(targetYaw, 10);
         setBodyYaw(targetBodyYaw);
         setHeadYaw(targetHeadYaw);
     }
