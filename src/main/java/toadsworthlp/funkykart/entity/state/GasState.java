@@ -25,8 +25,6 @@ public class GasState extends DriveState {
             steeringPenalty = 0;
         }
 
-        System.out.println(steeringPenalty);
-
         target.targetSpeed = target.getVehicleSpeed() - steeringPenalty;
 
         if(((BooleanInputAxis) target.inputs.get(InputAxis.BRAKE)).getCurrentState()) {

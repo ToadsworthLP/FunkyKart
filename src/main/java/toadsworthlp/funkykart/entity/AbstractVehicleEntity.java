@@ -27,6 +27,7 @@ import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -241,7 +242,8 @@ public abstract class AbstractVehicleEntity extends LivingEntity {
     // Environmental stat multipliers
 
     public double getTargetSpeedMultiplier() {
-        Block blockBelow = this.world.getBlockState(this.getBlockPos().subtract(new Vec3i(0, 1, 0))).getBlock();
+        BlockPos blockPos = new BlockPos(getPos().subtract(0, 0.5, 0));
+        Block blockBelow = this.world.getBlockState(blockPos).getBlock();
         if(blockBelow.equals(Blocks.AIR) || roadBlocks.contains(blockBelow)) {
             return 1;
         } else {
